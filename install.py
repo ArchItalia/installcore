@@ -146,6 +146,11 @@ class Application(tk.Frame):
         self.save_button = tk.Button(self.master, text="Install", command=self.save_options, font=font, fg=text3, bg=textbk3, highlightthickness=0)
         self.save_button.pack(pady=15)
         
+        self.optionxb_label = tk.Label(root, text="Installation of Core Linux, UEFI, btrfs filesystem with subvolumes @, @home.", font=font, fg=text, bg=textbk)
+        self.optionxb_label.pack(pady=15)
+        
+        
+        
     def save_options(self):
         # Salvataggio dei valori su file
         option1 = self.option1_entry.get()

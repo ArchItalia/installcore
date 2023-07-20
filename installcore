@@ -1,19 +1,62 @@
 #!/bin/bash
-#
+# CORE
 # Author Jonathan Sanfilippo - 20 Jul 2023
 # Another installation method programmed through a custom script 
 # prepared for File System BTRFS with subvolume creation and udev 
 # zram rule for swap, but completely customizable according to the needs of your machine.
 # architalialinux@gmail.com
 
-# Define color codes
-RED='\033[0;31m'
-NC='\033[0m' # No Color
 
-echo -e "\e[34mThis is your configuration.\e[0m"
- 
 
-read -p  "${RED}Warning:${NC} if you accept to continue, the entire disk will be partitioned and all data will be lost. Continue? [y/n] " choice
+
+url="./data"
+disk=$(cat $url/disk)
+efi=$(cat $url/efi)
+root=$(cat $url/root)
+home=$(cat $url/home)
+efi_size_mb=$(cat $url/efi_size)
+root_size_gb=$(cat $url/root_size)
+intero=$(lsblk -l | awk '$1=="sda3"{print $4}' | sed 's/.$//')
+diff=$(echo "$intero - $root_size_gb" | bc)
+
+p1="/dev/$efi"
+p2="/dev/$root"
+p3="/dev/$home"
+
+echo "$p1 $efi_size_mb"
+echo "$p2 $root_size_gb"
+echo "$p3 $diff"
+echo ""
+
+country=$(cat $url/country)
+localhost=$(cat $url/localhost)
+username=$(cat $url/username)
+realname=$(cat $url/realname)
+rootpw=$(cat $url/rootpw)
+userpw=$(cat $url/userpw)
+localegen=$(cat $url/localegen)
+localeconf=$(cat $url/localeconf)
+keymap=$(cat $url/keymap)
+localtime=$(cat $url/localtime)
+zram=$(cat $url/zram)
+systemdboot="$root"
+
+echo "Country: $country"
+echo "Localhost: $localhost"
+echo "Username: $username"
+echo "realname: $realname"
+echo "root password: $rootpw"
+echo "user password: $userpw"
+echo "localegen: $localegen"
+echo "localeconf: $localeconf"
+echo "keymap: $keymap"
+echo "localtime: $localtime"
+echo "zram[swap]: $zram GiB"
+
+echo ""
+
+read -p $'\033[0;31m'"Warning: If you accept to continue, the entire disk will be partitioned and all data will be lost. Continue? [y/n] "$'\033[0m' choice
+
 case "$choice" in
   y|Y )
     # Inserire qui il codice da eseguire se si sceglie di continuare
@@ -30,68 +73,20 @@ case "$choice" in
     ;;
 esac
 
-
 echo -e "\e[34mCreating partitions...\e[0m"
 
-url="./data"
-disk=$(cat $url/disk)
-efi=$(cat $url/efi)
-root=$(cat $url/root)
-home=$(cat $url/home)
-efi_size_mb=$(cat $url/efi_size)
-root_size_gb=$(cat $url/root_size)
-
-p1="/dev/$efi"
-p2="/dev/$root"
-p3="/dev/$home"
-
-country=$(cat $url/country)
-localhost=$(cat $url/localhost)
-username=$(cat $url/username)
-realname=$(cat $url/realname)
-rootpw=$(cat $url/rootpw)
-userpw=$(cat $url/userpw)
-localegen=$(cat $url/localegen)
-localeconf=$(cat $url/localeconf)
-keymap=$(cat $url/keymap)
-localtime=$(cat $url/localtime)
-zram=$(cat $url/zram)
-
-# Convertiamo la dimensione della partizione EFI in un numero di blocchi
 efi_size_blocks=$((efi_size_mb * 2048))
-
-# Convertiamo la dimensione della partizione Root in un numero di blocchi
 root_size_blocks=$((root_size_gb * 1048576))
-
-# Calcoliamo lo spazio libero rimasto sul disco
-fdisk_output=$(fdisk -l /dev/sda | tail -1)
+fdisk_output=$(fdisk -l /dev/$disk | tail -1)
 read start free_space_blocks end <<<"$fdisk_output"
-
-# Calcoliamo la dimensione della partizione Home
-home_size_blocks=$((free_space_blocks / 2))
-
-# Creiamo le partizioni
-echo "o
-n
-p
+home_size_blocks=$((free_space_blocks - efi_size_blocks - root_size_blocks))
 
 
-+$efi_size_blocks
-n
-p
-
-
-+$root_size_blocks
-n
-p
-
-
-+$home_size_blocks
-n
-p
-
-
-w" | fdisk /dev/$disk
+parted -s /dev/$disk mklabel gpt
+parted -s /dev/$disk mkpart primary fat32 1MiB ${efi_size_blocks}b
+parted -s /dev/$disk set 1 esp on
+parted -s /dev/$disk mkpart primary btrfs ${efi_size_blocks}b ${root_size_blocks}b
+parted -s /dev/$disk mkpart primary btrfs ${root_size_blocks}b $((${root_size_blocks} + ${home_size_blocks}))b
 
 
 #Formattazione delle partizioni - EFI, ROOT, HOME
@@ -117,11 +112,67 @@ reflector --verbose -c $country -a 6 --sort rate --save /etc/pacman.d/mirrorlist
 #pacstrap
 pacstrap -K /mnt base base-devel linux linux-firmware intel-ucode btrfs-progs
 
-
-
 #fstab
 genfstab -Up /mnt > /mnt/etc/fstab
 
+#arch-chroot 
+arch-chroot /mnt /bin/bash --skip-chdir 
 
-cp 2-parte.sh /mnt/home/
-arch-chroot /mnt /bin/bash -c "/home/2-parte.sh"
+ln -sf /usr/share/zoneinfo/$localtime /etc/localtime 
+hwclock --systohc
+echo "$localegen" > /etc/locale.gen
+locale-gen
+echo "LANG=$localeconf" >> /etc/locale.conf
+echo "KEYMAP=$keymap" >> /etc/vconsole.conf  
+echo "$localhost" > /etc/hostname
+echo "127.0.0.1 localhost" >> /etc/hosts 
+echo "::1       localhost" >> /etc/hosts
+echo root:$rootpw | chpasswd
+useradd -m $username
+echo $username:$userpw | chpasswd
+usermod -aG wheel $username
+usermod -c "$realname" $username
+echo "$username ALL=(ALL:ALL) ALL" >> /etc/sudoers.d/$username
+
+#systemd-boot
+pacman -S efibootmgr --noconfirm
+bootctl --path=/boot install
+echo "default arch-*" >> /boot/loader/loader.conf
+echo "timeout 5" >> /boot/loader/loader.conf
+echo "title Core Linux
+linux /vmlinuz-linux
+initrd /initramfs-linux.img
+options root=/dev/"$systemdboot" rootflags=subvol=@ rw quiet loglevel=3 rd.system.show_status=auto rd.udev.log_level=3" > /boot/loader/entries/arch.conf
+
+#zram udev rules 
+echo "zram" > /etc/modules-load.d/zram.conf
+echo 'ACTION=="add", KERNEL=="zram0", ATTR{comp_algorithm}="zstd", ATTR{disksize}="'$zram'G", RUN="/usr/bin/mkswap -U clear /dev/%k" , TAG+="systemd"' > /etc/udev/rules.d/99-zram.rules
+echo "/dev/zram0 none swap defaults,pri=100 0 0 " >> /etc/fstab
+
+
+
+core="gdm gnome-shell nautilus gnome-control-center xdg-user-dirs-gtk gnome-keyring architalia-fonts core-gnome-backgrounds core-gtk-theme core-icons-theme clean"
+base="xorg gvfs wpa_supplicant wireless_tools netctl net-tools iw networkmanager alsa-utils pipewire-pulse mtools dosfstools exfatprogs fuse firewalld acpi cronie git reflector bluez bluez-utils cups"
+software="firefox vim nano gimp mpv gparted htop gnome-terminal  gnome-text-editor gsmartcontrol eog git evince neofetch"
+
+Service="gdm NetworkManager firewalld bluetooth cronie reflector" # Service
+
+
+
+
+
+pacman -S $Ntools $Utils $Audio $PKGS $DE $DM --noconfirm
+
+systemctl enable $Service
+
+# aggiungere il repo e la chiave pub
+# aggiungere il core-brain e l'autostart con l'autoclean
+
+
+
+
+
+
+
+rm -r /home/2-parte.sh #clear
+

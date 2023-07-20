@@ -40,7 +40,7 @@ zram=$(cat $url/zram)
 
 
 
-
+echo ""
 
 
 echo "Country: $country"
