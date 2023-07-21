@@ -106,13 +106,8 @@ mkdir -p /mnt/{boot,home}
 mount $p1 /mnt/boot 
 mount -o noatime,ssd,space_cache=v2,compress=zstd,discard=async,subvol=@home $p3 /mnt/home 
 
-# reflector
 reflector --verbose -c $country -a 6 --sort rate --save /etc/pacman.d/mirrorlist
-
-#pacstrap
 pacstrap -K /mnt base base-devel linux linux-firmware intel-ucode btrfs-progs
-
-#fstab
 genfstab -Up /mnt > /mnt/etc/fstab
 
 #arch-chroot 
@@ -149,30 +144,113 @@ echo "zram" > /etc/modules-load.d/zram.conf
 echo 'ACTION=="add", KERNEL=="zram0", ATTR{comp_algorithm}="zstd", ATTR{disksize}="'$zram'G", RUN="/usr/bin/mkswap -U clear /dev/%k" , TAG+="systemd"' > /etc/udev/rules.d/99-zram.rules
 echo "/dev/zram0 none swap defaults,pri=100 0 0 " >> /etc/fstab
 
-
-
-core="gdm gnome-shell nautilus gnome-control-center xdg-user-dirs-gtk gnome-keyring architalia-fonts core-gnome-backgrounds core-gtk-theme core-icons-theme clean"
+Service="gdm NetworkManager firewalld bluetooth cronie reflector"
+core="yay timeshift extension-manager gdm gnome-shell nautilus gnome-control-center xdg-user-dirs-gtk gnome-keyring architalia-fonts core-gnome-backgrounds core-gtk-theme core-icons-theme clean"
 base="xorg gvfs wpa_supplicant wireless_tools netctl net-tools iw networkmanager alsa-utils pipewire-pulse mtools dosfstools exfatprogs fuse firewalld acpi cronie git reflector bluez bluez-utils cups"
-software="firefox vim nano gimp mpv gparted htop gnome-terminal  gnome-text-editor gsmartcontrol eog git evince neofetch"
+software="firefox git wget vim nano gparted htop gnome-terminal gnome-text-editor gsmartcontrol eog evince neofetch"
 
-Service="gdm NetworkManager firewalld bluetooth cronie reflector" # Service
+echo "[options]
+#RootDir     = /
+#DBPath      = /var/lib/pacman/
+#CacheDir    = /var/cache/pacman/pkg/
+#LogFile     = /var/log/pacman.log
+#GPGDir      = /etc/pacman.d/gnupg/
+#HookDir     = /etc/pacman.d/hooks/
+HoldPkg     = pacman glibc
+#XferCommand = /usr/bin/curl -L -C - -f -o %o %u
+#XferCommand = /usr/bin/wget --passive-ftp -c -O %o %u
+#CleanMethod = KeepInstalled
+Architecture = auto
+
+#IgnorePkg   =
+#IgnoreGroup =
+
+#NoUpgrade   =
+#NoExtract   =
+
+#UseSyslog
+Color
+#NoProgressBar
+CheckSpace
+#VerbosePkgLists
+#ParallelDownloads = 5
+
+SigLevel    = Required DatabaseOptional
+LocalFileSigLevel = Optional
+#RemoteFileSigLevel = Required
 
 
+[ai-repo]
+SigLevel = Required DatabaseOptional
+Server = https://gitlab.com/architalialinux/$repo/-/raw/main/$arch 
 
+[core]
+Include = /etc/pacman.d/mirrorlist
 
+[extra]
+Include = /etc/pacman.d/mirrorlist
 
-pacman -S $Ntools $Utils $Audio $PKGS $DE $DM --noconfirm
+#[multilib]
+#Include = /etc/pacman.d/mirrorlist
 
+ " > /etc/pacman.conf
+
+sudo pacman -Syy
+sudo pacman-key --lsign-key AEA0A2E06D592805
+pacman -S $core $base $software  --noconfirm
 systemctl enable $Service
 
-# aggiungere il repo e la chiave pub
-# aggiungere il core-brain e l'autostart con l'autoclean
+mkdir -p /home/$username/.core
+curl https://raw.githubusercontent.com/ArchItalia/core-theme/main/nord.sh -o /home/$username/.core/nord.sh
+chmod +x /home/$username/.core/nord.sh
+/home/$username/.core/nord.sh
 
 
+echo "
+#!/bin/bash
+
+bk=$(gsettings set org.gnome.desktop.background  picture-uri /usr/share/backgrounds/core/core-l.png)
+bk2=$(gsettings set org.gnome.desktop.background  picture-uri-dark /usr/share/backgrounds/core/core-d.png)
+extuserthemes=$(gnome-extensions enable  user-theme@gnome-shell-extensions.gcampax.github.com)
+ding=$(gnome-extensions enable ding@rastersoft.com)
+shell=$(gsettings set org.gnome.shell.extensions.user-theme name "Core")
+legacx=$(gsettings set org.gnome.desktop.interface gtk-theme "Core")
+icn=$(gsettings set org.gnome.desktop.interface icon-theme 'Core')
+cur=$(gsettings set org.gnome.desktop.interface cursor-theme 'Core')
+nauicn=$(gsettings set org.gnome.nautilus.icon-view default-zoom-level small-plus)
+fnts=$(gsettings set org.gnome.desktop.interface font-name 'Architalia Regular 12')
+fnts2=$(gsettings set org.gnome.desktop.wm.preferences titlebar-font 'Architalia Bold 12')
+fnts3=$(gsettings set org.gnome.desktop.interface monospace-font-name 'Architalia Mono Bold 11')
+
+start(){
+
+   $extuserthemes
+   $shell
+   $legacx
+   $bk
+   $bk2
+   $icn
+   $cur
+   $nauicn
+   $fnts
+   $fnts2
+   $fnts3
+   
+   rm -rf $HOME/.config/autostart/*
+}
+
+start
+
+" > /home/$username/.core/brain
+chmod +x /home/$username/.core/brain
+mkdir -p /home/$username/.config/autostart
+echo "[Desktop Entry]
+Version=1.0
+Name=brain
+Exec=/home/"$username"/.core/brain
+Type=Application
+Terminal=false
+Categories=Utility" > /home/$username/.config/autostart/brain.desktop
 
 
-
-
-
-rm -r /home/2-parte.sh #clear
 
