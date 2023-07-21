@@ -5,7 +5,7 @@
 # Versione 1.0.0: 
 #
 
-
+import re
 import os
 import tkinter as tk
 import subprocess
@@ -36,7 +36,16 @@ class installCore(tk.Frame):
         purple = ("#b48ead")
         orange = ("#d08770")
         
-        self.disk = subprocess.check_output("ls /dev | grep -E '^sd[a-z]+$'", shell=True).decode().split()[0]
+        valid_disks_pattern = r'^(sd[a-z]+|vda|nvmep\d+)$'
+        valid_disks_regex = re.compile(valid_disks_pattern)
+
+        disks = subprocess.check_output("ls /dev | grep -E '{}'".format(valid_disks_pattern),
+                                shell=True).decode().split()
+
+        for disk in disks:
+            if valid_disks_regex.match(disk):
+                self.disk = disk
+                break
         
         logo = tk.PhotoImage(file="/core-installation/.assets/logo.png")
         self.logo_label = tk.Label(self.master, image=logo, bd=0, bg=polardark)
@@ -150,14 +159,14 @@ class installCore(tk.Frame):
         self.save_button = tk.Button(self.master, text="Install", command=self.save_options, font=font, fg=snow, bg=polarlight, highlightthickness=0)
         self.save_button.pack(pady=15)
         
-       # product_name = subprocess.check_output("sudo dmidecode -t baseboard | grep 'Product Name'", shell=True).decode().strip()
-       # product_name = product_name.split()[2]
-       
-       # manufacturer = subprocess.check_output("sudo dmidecode -t baseboard | grep 'Manufacturer'", shell=True).decode().strip()
-       # manufacturer = manufacturer.split()[1]
+        product_name = subprocess.check_output("sudo dmidecode -t baseboard | grep 'Product Name'", shell=True).decode().strip()
+        product_name = product_name.split()[2]
+    
+        manufacturer = subprocess.check_output("sudo dmidecode -t baseboard | grep 'Manufacturer'", shell=True).decode().strip()
+        manufacturer = manufacturer.split()[1]
         
-      #  self.optionxb_label = tk.Label(root, text=f"Real Machine {manufacturer} {product_name}", font=font, fg=green, bg=polardark)
-      #  self.optionxb_label.pack(pady=5)
+        self.optionxb_label = tk.Label(root, text=f"{manufacturer} {product_name}", font=font, fg=green, bg=polardark)
+        self.optionxb_label.pack(pady=5)
         self.optionxb_label = tk.Label(root, text="UEFI, btrfs filesystem with subvolumes @, @home.", font=font, fg=yellow, bg=polardark)
         self.optionxb_label.pack(pady=5)
         
