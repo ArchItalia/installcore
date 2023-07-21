@@ -38,7 +38,7 @@ class installCore(tk.Frame):
         
         self.disk = subprocess.check_output("ls /dev | grep -E '^sd[a-z]+$'", shell=True).decode().split()[0]
         
-        logo = tk.PhotoImage(file="/home/jonathan/Development/core-linux/core-linux-live/core/airootfs/core-installation/.assets/logo.png")
+        logo = tk.PhotoImage(file="/core-installation/.assets/logo.png")
         self.logo_label = tk.Label(self.master, image=logo, bd=0, bg=polardark)
         self.logo_label.image = logo
         self.logo_label.pack()
@@ -166,58 +166,58 @@ class installCore(tk.Frame):
     def save_options(self):
         # Salvataggio dei valori su file
         option1 = self.option1_entry.get()
-        with open("/home/jonathan/Development/core-linux/core-linux-live/core/airootfs/core-installation/data/root", "w") as f:
+        with open("/core-installation/data/root", "w") as f:
             f.write(option1)
         option1b = self.option1b_entry.get()
-        with open("/home/jonathan/Development/core-linux/core-linux-live/core/airootfs/core-installation/data/root_size", "w") as f:
+        with open("/core-installation/data/root_size", "w") as f:
             f.write(option1b)
         option2 = self.option2_entry.get()
-        with open("/home/jonathan/Development/core-linux/core-linux-live/core/airootfs/core-installation/data/country", "w") as f:
+        with open("/core-installation/data/country", "w") as f:
             f.write(option2)
         option3 = self.option3_entry.get()
-        with open("/home/jonathan/Development/core-linux/core-linux-live/core/airootfs/core-installation/data/localhost", "w") as f:
+        with open("/core-installation/data/localhost", "w") as f:
             f.write(option3)
         option4 = self.option4_entry.get()
-        with open("/home/jonathan/Development/core-linux/core-linux-live/core/airootfs/core-installation/data/username", "w") as f:
+        with open("/core-installation/data/username", "w") as f:
             f.write(option4)
         option5 = self.option5_entry.get()
-        with open("/home/jonathan/Development/core-linux/core-linux-live/core/airootfs/core-installation/data/realname", "w") as f:
+        with open("/core-installation/data/realname", "w") as f:
             f.write(option5)
         option6 = self.option6_entry.get()
-        with open("/home/jonathan/Development/core-linux/core-linux-live/core/airootfs/core-installation/data/rootpw", "w") as f:
+        with open("/core-installation/data/rootpw", "w") as f:
             f.write(option6)
         option7 = self.option7_entry.get()
-        with open("/home/jonathan/Development/core-linux/core-linux-live/core/airootfs/core-installation/data/userpw", "w") as f:
+        with open("/core-installation/data/userpw", "w") as f:
             f.write(option7)
         option8 = self.option8_entry.get()
-        with open("/home/jonathan/Development/core-linux/core-linux-live/core/airootfs/core-installation/data/localegen", "w") as f:
+        with open("/core-installation/data/localegen", "w") as f:
             f.write(option8)
         option9 = self.option9_entry.get()
-        with open("/home/jonathan/Development/core-linux/core-linux-live/core/airootfs/core-installation/data/localeconf", "w") as f:
+        with open("/core-installation/data/localeconf", "w") as f:
             f.write(option9)
         option10 = self.option10_entry.get()
-        with open("/home/jonathan/Development/core-linux/core-linux-live/core/airootfs/core-installation/data/keymap", "w") as f:
+        with open("/core-installation/data/keymap", "w") as f:
             f.write(option10)
         option11 = self.option11_entry.get()
-        with open("/home/jonathan/Development/core-linux/core-linux-live/core/airootfs/core-installation/data/localtime", "w") as f:
+        with open("/core-installation/data/localtime", "w") as f:
             f.write(option11)
         option12 = self.option12_entry.get()
-        with open("/home/jonathan/Development/core-linux/core-linux-live/core/airootfs/core-installation/data/zram", "w") as f:
+        with open("/core-installation/data/zram", "w") as f:
             f.write(option12)
         option13 = self.option13_entry.get()
-        with open("/home/jonathan/Development/core-linux/core-linux-live/core/airootfs/core-installation/data/efi", "w") as f:
+        with open("/core-installation/data/efi", "w") as f:
             f.write(option13)
         option13b = self.option13b_entry.get()
-        with open("/home/jonathan/Development/core-linux/core-linux-live/core/airootfs/core-installation/data/efi_size", "w") as f:
+        with open("/core-installation/data/efi_size", "w") as f:
             f.write(option13b)
         option14 = self.option14_entry.get()
-        with open("/home/jonathan/Development/core-linux/core-linux-live/core/airootfs/core-installation/data/home", "w") as f:
+        with open("/core-installation/data/home", "w") as f:
             f.write(option14)
         option14b = self.option14b_entry.get()
-        with open("/home/jonathan/Development/core-linux/core-linux-live/core/airootfs/core-installation/data/disk", "w") as f:
+        with open("/core-installation/data/disk", "w") as f:
             f.write(option14b)
             
-        subprocess.Popen(['gnome-terminal', '--', '/bin/bash', '-c', '/home/jonathan/Development/core-linux/core-linux-live/core/airootfs/core-installation/test; exec bash'])
+        subprocess.Popen(['gnome-terminal', '--', '/bin/bash', '-c', '/core-installation/installcore; exec bash'])
 
 
 if __name__ == "__main__":
@@ -229,7 +229,7 @@ if __name__ == "__main__":
     root.config(bg='#2e3440') 
 
     # Icone
-    icon = tk.PhotoImage(file="/home/jonathan/Development/core-linux/core-linux-live/core/airootfs/core-installation/.assets/icon.png")
+    icon = tk.PhotoImage(file="/core-installation/.assets/icon.png")
     root.iconphoto(False, icon)
 
     app = installCore(master=root)

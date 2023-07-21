@@ -9,7 +9,7 @@
 
 
 
-url="./data"
+url="/core-installation/data"
 disk=$(cat $url/disk)
 efi=$(cat $url/efi)
 root=$(cat $url/root)
