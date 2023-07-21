@@ -47,7 +47,7 @@ class installCore(tk.Frame):
                 self.disk = disk
                 break
         
-        logo = tk.PhotoImage(file="/core-installation/.assets/logo.png")
+        logo = tk.PhotoImage(file="/home/userarch/.core-installation/.assets/logo.png")
         self.logo_label = tk.Label(self.master, image=logo, bd=0, bg=polardark)
         self.logo_label.image = logo
         self.logo_label.pack()
@@ -159,14 +159,14 @@ class installCore(tk.Frame):
         self.save_button = tk.Button(self.master, text="Install", command=self.save_options, font=font, fg=snow, bg=polarlight, highlightthickness=0)
         self.save_button.pack(pady=15)
         
-        product_name = subprocess.check_output("sudo dmidecode -t baseboard | grep 'Product Name'", shell=True).decode().strip()
-        product_name = product_name.split()[2]
-    
-        manufacturer = subprocess.check_output("sudo dmidecode -t baseboard | grep 'Manufacturer'", shell=True).decode().strip()
-        manufacturer = manufacturer.split()[1]
-        
-        self.optionxb_label = tk.Label(root, text=f"{manufacturer} {product_name}", font=font, fg=green, bg=polardark)
-        self.optionxb_label.pack(pady=5)
+        #product_name = subprocess.check_output("sudo dmidecode -t baseboard | grep 'Product Name'", shell=True).decode().strip()
+        #product_name = product_name.split()[2]
+    #
+        #manufacturer = subprocess.check_output("sudo dmidecode -t baseboard | grep 'Manufacturer'", shell=True).decode().strip()
+        #manufacturer = manufacturer.split()[1]
+        #
+        #self.optionxb_label = tk.Label(root, text=f"{manufacturer} {product_name}", font=font, fg=green, bg=polardark)
+        #self.optionxb_label.pack(pady=5)
         self.optionxb_label = tk.Label(root, text="UEFI, btrfs filesystem with subvolumes @, @home.", font=font, fg=yellow, bg=polardark)
         self.optionxb_label.pack(pady=5)
         
@@ -175,58 +175,58 @@ class installCore(tk.Frame):
     def save_options(self):
         # Salvataggio dei valori su file
         option1 = self.option1_entry.get()
-        with open("/core-installation/data/root", "w") as f:
+        with open("/home/userarch/.core-installation/data/root", "w") as f:
             f.write(option1)
         option1b = self.option1b_entry.get()
-        with open("/core-installation/data/root_size", "w") as f:
+        with open("/home/userarch/.core-installation/data/root_size", "w") as f:
             f.write(option1b)
         option2 = self.option2_entry.get()
-        with open("/core-installation/data/country", "w") as f:
+        with open("/home/userarch/.core-installation/data/country", "w") as f:
             f.write(option2)
         option3 = self.option3_entry.get()
-        with open("/core-installation/data/localhost", "w") as f:
+        with open("/home/userarch/.core-installation/data/localhost", "w") as f:
             f.write(option3)
         option4 = self.option4_entry.get()
-        with open("/core-installation/data/username", "w") as f:
+        with open("/home/userarch/.core-installation/data/username", "w") as f:
             f.write(option4)
         option5 = self.option5_entry.get()
-        with open("/core-installation/data/realname", "w") as f:
+        with open("/home/userarch/.core-installation/data/realname", "w") as f:
             f.write(option5)
         option6 = self.option6_entry.get()
-        with open("/core-installation/data/rootpw", "w") as f:
+        with open("/home/userarch/.core-installation/data/rootpw", "w") as f:
             f.write(option6)
         option7 = self.option7_entry.get()
-        with open("/core-installation/data/userpw", "w") as f:
+        with open("/home/userarch/.core-installation/data/userpw", "w") as f:
             f.write(option7)
         option8 = self.option8_entry.get()
-        with open("/core-installation/data/localegen", "w") as f:
+        with open("/home/userarch/.core-installation/data/localegen", "w") as f:
             f.write(option8)
         option9 = self.option9_entry.get()
-        with open("/core-installation/data/localeconf", "w") as f:
+        with open("/home/userarch/.core-installation/data/localeconf", "w") as f:
             f.write(option9)
         option10 = self.option10_entry.get()
-        with open("/core-installation/data/keymap", "w") as f:
+        with open("/home/userarch/.core-installation/data/keymap", "w") as f:
             f.write(option10)
         option11 = self.option11_entry.get()
-        with open("/core-installation/data/localtime", "w") as f:
+        with open("/home/userarch/.core-installation/data/localtime", "w") as f:
             f.write(option11)
         option12 = self.option12_entry.get()
-        with open("/core-installation/data/zram", "w") as f:
+        with open("/home/userarch/.core-installation/data/zram", "w") as f:
             f.write(option12)
         option13 = self.option13_entry.get()
-        with open("/core-installation/data/efi", "w") as f:
+        with open("/home/userarch/.core-installation/data/efi", "w") as f:
             f.write(option13)
         option13b = self.option13b_entry.get()
-        with open("/core-installation/data/efi_size", "w") as f:
+        with open("/home/userarch/.core-installation/data/efi_size", "w") as f:
             f.write(option13b)
         option14 = self.option14_entry.get()
-        with open("/core-installation/data/home", "w") as f:
+        with open("/home/userarch/.core-installation/data/home", "w") as f:
             f.write(option14)
         option14b = self.option14b_entry.get()
-        with open("/core-installation/data/disk", "w") as f:
+        with open("/home/userarch/.core-installation/data/disk", "w") as f:
             f.write(option14b)
             
-        subprocess.Popen(['gnome-terminal', '--', '/bin/bash', '-c', '/core-installation/installcore; exec bash'])
+        subprocess.Popen(['tilix', '-e', 'sudo /home/userarch/.core-installation/installcore'])
 
 
 if __name__ == "__main__":
@@ -238,7 +238,7 @@ if __name__ == "__main__":
     root.config(bg='#2e3440') 
 
     # Icone
-    icon = tk.PhotoImage(file="/core-installation/.assets/icon.png")
+    icon = tk.PhotoImage(file="/home/userarch/.core-installation/.assets/icon.png")
     root.iconphoto(False, icon)
 
     app = installCore(master=root)
