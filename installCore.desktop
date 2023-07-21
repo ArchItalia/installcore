@@ -1,13 +1,11 @@
 [Desktop Entry]
 Version=1.0
 Name=installCore
-Exec=python3 /home/jonathan/Development/core-linux/core-linux-live/core/airootfs/core-installation/installCore.py
-Type=Application
+Exec=/usr/bin/python3 /home/jonathan/Development/core-linux/core-linux-live/core/airootfs/core-installation/installCore.py
 Icon=/home/jonathan/Development/core-linux/core-linux-live/core/airootfs/core-installation/.assets/icon.png
 Terminal=false
+Type=Application
 Categories=Utility
-Comment=Install Core Linux.
-Keywords=Core;Installation;
 StartupNotify=true
 StartupWMClass=installCore
 

@@ -6,7 +6,7 @@
 echo "TEST"
 echo ""
 
-url="./data"
+url="/home/jonathan/Development/core-linux/core-linux-live/core/airootfs/core-installation/data"
 disk=$(cat $url/disk)
 efi=$(cat $url/efi)
 root=$(cat $url/root)
