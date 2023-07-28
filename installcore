@@ -1,0 +1,258 @@
+#!/usr/bin/bash
+
+version="1.1"
+
+main_color="#5e81ac"
+warning_color="#bf616a"
+
+export BORDER_FOREGROUND="$main_color"
+export GUM_CONFIRM_SELECTED_BACKGROUND="$main_color"
+export GUM_CHOOSE_CURSOR_FOREGROUND="$main_color"
+export GUM_CHOOSE_SELECTED_FOREGROUND="$main_color"
+export GUM_INPUT_CURSOR_FOREGROUND="$main_color"
+export GUM_FILTER_INDICATOR_FOREGROUND="$main_color"
+export FOREGROUND="#d8dee9"
+export BACKGROUND="#2e3440"
+export DISABLED_FOREGROUND="#4c566a"
+export SELECTED_BACKGROUND="#434c5e"
+export HEADER_FOREGROUND="#eceff4"
+export SUCCESS_COLOR="#a3be8c"
+export INFO_COLOR="#88c0d0"
+export WARNING_COLOR="$warning_color"
+export LINK_COLOR="#8fbcbb"
+export CODE_COLOR="#ebcb8b"
+export QUOTE_COLOR="#b48ead"
+
+
+
+
+
+Welcome() {
+    gum confirm "$(gum style --border normal --margin '1' --padding '1 2' "$(gum style --foreground "$main_color" '  
+    
+        /@@@@@/             @@@@@,         @@@,   @@@@@     (@@@@@@/         
+    @@@@@@@@@@@@@*      @@@@@@@@@@@       @@@@@@@@@@@,  @@@@@@@@@@@@@#      
+  @@@@@@     @@@      @@@@@@,  @@@@@@     @@@@@@      &@@@@       %@@@@     
+ @@@@@             &@@@@@@       @@@@@@   @@@@        @@@@@@@@@@@@@@@@@     
+ @@@@@           @@@@@@(          @@@@@@  @@@@        @@@@&&&&&&&&&&&&#     
+ &@@@@@       %@@@@@@  @@@@     @@@@@@,   @@@@        @@@@@                 
+   @@@@@@@@@@@@@@@%    @@@@@@@@@@@@@      @@@@         @@@@@@     #@@@      
+     &@@@@@@@@@@         *@@@@@@@(        @@@@           @@@@@@@@@@@@&  
+     
+     ')" "" "Welcome to InstallCore" "Ready to make your Core installation... ready?" "$(gum style --foreground "#5e81ac" "InstallCore version: $version")")" && CONTINUE=true
+    if [[ $CONTINUE != "true" ]]; then
+        echo "Exiting. Have a good day!"
+        exit
+    fi
+}
+
+Timezone() {
+    timezone=$(timedatectl list-timezones | gum filter --placeholder "select a timezone")
+    
+}
+
+Keymap() {
+    keymap=$(localectl list-keymaps | gum filter --placeholder "select a keymap")
+}
+
+Locale() {
+    locale=$(cat /etc/locales | gum filter --placeholder "select a locale")
+}
+
+Username() {
+    clear
+    gum style --border normal --margin "1" --padding "1 2" "Please enter your username and realname "
+    username=$(gum input --placeholder "Please enter your username [lowercase automatic convert]" | tr '[:upper:]' '[:lower:]')
+    realname=$(gum input --placeholder "Please enter your Realname" )
+}
+
+# Password Function
+Password() {
+    matches="false"
+    passwrong="false"
+    while [[ "$matches" == "false" ]]; do
+        clear
+        if [[ "$passwrong" == "true" ]]; then
+            gum style --border normal --margin "1" --padding "1 2" "Passwords did not match, please type the password again"
+        else
+            gum style --border normal --margin "1" --padding "1 2" "Now enter your password"
+        fi
+        password=$(gum input --password --placeholder "Please enter a password")
+        clear
+        gum style --border normal --margin "1" --padding "1 2" "Verify your password"
+        password_verif=$(gum input --password --placeholder "Type your password again")
+        if [[ "$password" == "$password_verif" ]]; then
+            matches="true"
+        else
+            passwrong="true"
+        fi
+    done
+    crypt_password=$(echo -n $password | openssl dgst -sha512 -c | awk '{print $2}')
+}
+
+# RootPassword Function
+RootPassword() {
+    clear
+    different_root_password=true
+    gum confirm "$(gum style --border normal --margin '1' --padding '1 2' 'Use same password for root?')" && different_root_password=false
+    if [[ $different_root_password != "true" ]]; then
+        root_password=$password # set root password same as user password
+    else
+        root_matches="false"
+        root_passwrong="false"
+        while [[ "$root_matches" == "false" ]]; do
+            clear
+            if [[ "$root_passwrong" == "true" ]]; then
+                gum style --border normal --margin "1" --padding "1 2" "Passwords did not match, please type the root password again"
+            else
+                gum style --border normal --margin "1" --padding "1 2" "Now enter your root password"
+            fi
+            root_password=$(gum input --password --placeholder "Please enter a root password")
+            clear
+            gum style --border normal --margin "1" --padding "1 2" "Verify your root password"
+            root_password_verif=$(gum input --password --placeholder "Type your root password again")
+            if [[ "$root_password" == "$root_password_verif" ]]; then
+                root_matches="true"
+            else
+                root_passwrong="true"
+            fi
+        done
+    fi
+    crypt_root_password=$(echo -n $root_password | openssl dgst -sha512 -c | awk '{print $2}')
+}
+
+
+Shell() {
+    clear
+    gum style --border normal --margin "1" --padding "1 2" "Select a default shell"
+    shell=$(gum choose --limit 1 fish zsh bash)
+
+  
+}
+
+
+
+
+Hostname() {
+   clear
+   gum style --border normal --margin "1" --padding "1 2" "Please enter a hostname"
+   default_hostname="core-$(printf '%s' $(echo "$RANDOM" | md5sum) | cut -c 1-10)"
+   read -p "Hostname ($default_hostname): " hostname
+   hostname=${hostname:-$default_hostname}
+}
+
+Disk() {
+    clear
+    gum style --border normal --margin "1" --padding "1 2" "Please select the disk to install to" "$(gum style --foreground "$warning_color" 'WARNING: This will erease the whole disk')"
+    disk_dev=$(lsblk -pdo name | grep -v zram | grep -v NAME | grep -v loop | grep -v sr | gum choose --limit 1)
+    disk=$(echo $disk_dev | awk '{ print substr ($0, 6 ) }')
+    default_root=$(lsblk -b -n -o SIZE /dev/$disk | awk 'NR==1{size=int($1/1048576); printf "%d", size}')
+    read -p "total disk: $default_root MB. enter root size: " root
+    root=${root:-}
+    ram=$(free -m | awk '/^Mem:/{print int($2/1024 + 0.5) }')
+    read -p "Set Zram size: your ram is $ram GB. " zram
+    zram=${zram:-$ram}
+}
+
+
+UEFICheck() {
+    is_uefi=$([ -d /sys/firmware/efi ] && echo true || echo false)
+    if [[ $is_uefi == "true" ]]; then
+        grub_type="grub-efi"
+        grub_location="/boot/efi"
+    else
+        grub_type="grub-legacy"
+        grub_location="$disk_dev"
+    fi
+}
+
+Reflector() {
+    country=$(cat /etc/country | gum filter --placeholder "select a mirrorlist country")
+}
+
+
+
+
+
+Summary() {
+    clear
+    CONTINUE=false
+    gum confirm "$(gum style --border normal --margin '1' --padding '1 2' "Summary, is this correct?" "" "keymap: $keymap" "timezone: $timezone" "locale: $locale" "Username: $username" "Realname: $realname " "password: $password" "Default shell: $shell" "root-password: $root_password" "hostname: $hostname" "disk: $disk" "efi: $is_uefi" "reflector: $country" "root: $root MB" "zram: $zram GB")" && CONTINUE=true
+    if [[ $CONTINUE != "true" ]]; then
+        Change
+    else
+        # Remove config.json if it exists
+        if [[ $(ls | grep "/tmp/config.json") ]]; then
+            rm /tmp/config.json
+        fi
+        # Make config.json
+        echo "{
+        \"partition\": {
+            \"device\": \"$disk\",
+            \"root\": \"$root\",
+            \"zram\": \"$zram\",
+            \"mode\": \"Auto\",
+            \"efi\": $is_uefi,
+            \"partitions\": []
+        },
+        \"bootloader\": {
+            \"type\": \"$grub_type\",
+            \"location\": \"$grub_location\"
+        },
+        \"locale\": {
+            \"locale\": [
+                \"$locale\"
+            ],
+            \"keymap\": \"$keymap\",
+            \"timezone\": \"$timezone\",
+            \"reflector\": \"$country\"
+        },
+        \"networking\": {
+            \"hostname\": \"$hostname\"
+        },
+        \"users\": [
+            {
+                \"name\": \"$username\",
+                \"rname\": \"$realname\",
+                \"userpass\": \"$crypt_password\",
+                \"hasroot\": true,
+                \"shell\": \"$shell\"
+            }
+        ],
+        \"rootpass\": \"$crypt_root_password\",
+        \"kernel\": \"linux\"
+    }" > /tmp/config.json
+    fi
+}
+
+Change() {
+    gum style --border normal --margin '1' --padding '1 2' "What do you want to change?"
+    $(gum choose --limit 1 Timezone Keymap Locale Username Password RootPassword Shell Hostname Disk Reflector )
+    Summary
+}
+
+Install() {
+    CONTINUE=false
+    gum confirm "$(gum style --border normal --margin '1' --padding '1 2' "Are you sure you want to install?" "$(gum style --foreground "$warning_color" 'WARNING: This will erease the whole disk')")" && CONTINUE=true
+    if [[ $CONTINUE != "true" ]]; then
+        echo "Exiting. Have a good day!"
+        exit
+    else
+        sudo coremio
+    fi
+}
+
+Welcome
+Timezone
+Keymap
+Locale
+Username
+Password
+RootPassword
+Shell
+Hostname
+Disk 
+Reflector
+UEFICheck
+Summary
+Install

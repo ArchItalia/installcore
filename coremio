@@ -1,0 +1,227 @@
+#!/usr/bin/bash
+
+# Leggi il file JSON in una variabile
+json=$(cat "/tmp/config.json")
+
+# Crea le variabili leggendo dal JSON
+partition_device=$(echo "$json" | jq -r '.partition.device')
+partition_efi=$(echo "$json" | jq -r '.partition.efi')
+root=$(echo "$json" | jq -r '.partition.root')
+locale_locale=$(echo "$json" | jq -r '.locale.locale[0]')
+locale_keymap=$(echo "$json" | jq -r '.locale.keymap')
+locale_timezone=$(echo "$json" | jq -r '.locale.timezone')
+country=$(echo "$json" | jq -r '.locale.reflector')
+networking_hostname=$(echo "$json" | jq -r '.networking.hostname')
+user_name=$(echo "$json" | jq -r '.users[0].name')
+real_name=$(echo "$json" | jq -r '.users[0].rname')
+user_password=$(echo "$json" | jq -r '.users[0].userpass')
+user_shell=$(echo "$json" | jq -r '.users[0].shell')
+root_password=$(echo "$json" | jq -r '.rootpass')
+zr=$(echo "$json" | jq -r '.partition.zram')
+zram="${zr}G"
+kernel=$(echo "$json" | jq -r '.kernel')
+service="gdm firewalld bluetooth cronie reflector" # Service
+core="architalia-fonts core-keyring core-gtk-theme core-icons-theme core-extensions-base core-gnome-backgrounds gnome-shell-extension-desktop-icons-ng extension-manager timeshift yay htop mpv gimp eog evince gsmartcontrol gparted gnome-clocks gnome-calculator gnome-calendar firewalld acpi cronie git reflector bluez bluez-utils mtools dosfstools exfatprogs fuse alsa-utils pipewire-pulse wpa_supplicant wireless_tools netctl net-tools iw gdm xorg gnome-shell nautilus gnome-terminal gvfs gnome-control-center xdg-user-dirs-gtk  gnome-text-editor gnome-keyring gnome-system-monitor"
+
+
+
+
+
+if [ "$partition_efi" = "true" ]; then   
+
+    
+    uefi(){
+        # Cancellare completamente il disco specificato come "partition_device"
+        sgdisk --zap-all "/dev/$partition_device"
+        
+        # Creare una tabella di partizione GPT
+        parted -s "/dev/$partition_device" mklabel gpt
+        
+        # Crea una partizione EFI da 1 GB
+        parted -s "/dev/$partition_device" mkpart primary fat32 1MiB 1GiB
+        parted -s "/dev/$partition_device" set 1 esp on
+        
+        # Crea una partizione root in BTRFS con sottovolume "@"
+        parted -s "/dev/$partition_device" mkpart primary btrfs 1GiB "${root}M"
+        
+        # Crea una partizione home in BTRFS con sottovolume "@home"
+        parted -s "/dev/$partition_device" mkpart primary btrfs "${root}M" 100%
+        
+        # Formattare la partizione EFI come FAT32
+        mkfs.fat -F32 "/dev/$partition_device"1
+        mkfs.btrfs -f "/dev/$partition_device"2
+        mkfs.btrfs -f "/dev/$partition_device"3
+        
+        mount "/dev/$partition_device"2 /mnt           
+        btrfs su cr /mnt/@  
+        umount /mnt 
+        mount "/dev/$partition_device"3 /mnt
+        btrfs su cr /mnt/@home  
+        
+        # Smontare e rimontare le partizioni
+        umount /mnt
+        mount -o noatime,ssd,space_cache=v2,compress=zstd,discard=async,subvol=@ "/dev/$partition_device"2 /mnt
+        mkdir /mnt/home
+        mount -o noatime,ssd,space_cache=v2,compress=zstd,discard=async,subvol=@home "/dev/$partition_device"3 /mnt/home
+        mkdir /mnt/boot
+        mount "/dev/$partition_device"1 /mnt/boot
+        
+        
+        # reflector
+        reflector --verbose -c $country -a 6 --sort rate --save /etc/pacman.d/mirrorlist
+        
+        # Installare il sistema base
+        pacstrap -K /mnt base base-devel $kernel linux-firmware intel-ucode btrfs-progs
+        
+        # Generare il file fstab
+        genfstab -U /mnt > /mnt/etc/fstab
+        
+        # Copiare il file di configurazione del locale
+        #cp /etc/locale.gen /mnt/etc/
+        
+        # Chroot nel nuovo sistema installato
+        arch-chroot /mnt /bin/bash -c "locale-gen $locale_locale && echo LANG=$locale_locale > /etc/locale.conf && echo KEYMAP=$locale_keymap > /etc/vconsole.conf && ln -sf /usr/share/zoneinfo/$locale_timezone /etc/localtime"
+        
+        # Impostare il nome host
+        echo "$networking_hostname" > /mnt/etc/hostname
+        
+        # Impostazioni di rete
+        arch-chroot /mnt "pacman -Syyu --noconfirm && pacman -S networkmanager --noconfirm && systemctl enable NetworkManager"
+        
+
+        # Creare un utente regolare
+        arch-chroot /mnt  pacman -Sy $user_shell --noconfirm 
+        arch-chroot /mnt  useradd -m -s /bin/$user_shell $user_name
+        arch-chroot /mnt  usermod -c "$real_name" $user_name
+        
+        # Impostare la password dell'utente regolare
+        arch-chroot /mnt /bin/bash -c "echo $user_name:$user_password | chpasswd"
+        
+        # crea profilo sudoers.d
+        arch-chroot /mnt echo "$user_name ALL=(ALL:ALL) ALL" >> /etc/sudoers.d/$user_name
+        
+        # Impostare la password di root
+        arch-chroot /mnt /bin/bash -c "echo root:$root_password | chpasswd"
+
+        # Abilita e configura zram
+        arch-chroot /mnt echo "zram" > /etc/modules-load.d/zram.conf
+        arch-chroot /mnt echo 'ACTION=="add", KERNEL=="zram0", ATTR{comp_algorithm}="zstd", ATTR{disksize}="'$zram'", RUN="/usr/bin/mkswap -U clear /dev/%k" , TAG+="systemd"' > /etc/udev/rules.d/99-zram.rules
+        arch-chroot /mnt echo "/dev/zram0 none swap defaults,pri=100 0 0 " >> /etc/fstab
+
+        # Configura systemd-boot
+        arch-chroot /mnt /bin/bash -c "bootctl --path=/boot install && echo 'default arch-*' >> /boot/loader/loader.conf && echo 'timeout 5' >> /boot/loader/loader.conf && echo 'title Core Linux' > /boot/loader/entries/arch.conf && echo 'linux /vmlinuz-linux' >> /boot/loader/entries/arch.conf && echo 'initrd /initramfs-linux.img' >> /boot/loader/entries/arch.conf && echo 'options root=/dev/'$partition_device'2 rootflags=subvol=@ rw quiet loglevel=3 rd.system.show_status=auto rd.udev.log_level=3' >> /boot/loader/entries/arch.conf"
+        
+        # copia pacman.conf per installazione
+        cp -rp /etc/pacman.conf /mnt/etc/
+
+        # Installazione pacchetti
+        arch-chroot /mnt /bin/bash -c "pacman -Sy $core --noconfirm"
+        arch-chroot /mnt /bin/bash -c "systemctl enable $service"
+
+        # finalizzazione
+        cp -rp /usr/bin/{core-brain,core-terminal-nord-theme,updates} /mnt/usr/bin/
+        chmod -R 755 /mnt/usr/bin/{core-brain,core-terminal-nord-theme,updates}
+        cp -rp /home/liveuser/.zshrc /mnt/home/$user_name/.config/
+        cp -rp /etc/core/zsh  /mnt/etc/
+        cp -rp /usr/share/fonts /mnt/usr/share/
+        mkdir -p /mnt/home/$user_name/.config/autostart
+        cp -rp /home/liveuser/.config/autostart/startx.desktop /mnt/home/$user_name/.config/autostart/
+        cp -rp /etc/os-release /mnt/etc/
+        cp -rp /home/liveuser/Templates /mnt/home/$user_name/
+
+        # copia pacman.conf con richiesta firme
+        cp -rp /etc/core/pacman.conf /mnt/etc/
+    }
+uefi
+else
+
+# Installazione su sistema legacy
+    legacy() {
+        # Cancellare completamente il disco specificato come "partition_device"
+        sgdisk --zap-all "/dev/$partition_device"
+        
+        # Creare una tabella di partizione MBR
+        parted -s "/dev/$partition_device" mklabel msdos
+        
+        # Crea una partizione root in BTRFS con sottovolume "@"
+        parted -s "/dev/$partition_device" mkpart primary btrfs 1MiB "${root}M"
+        
+        # Crea una partizione home in BTRFS con sottovolume "@home"
+        parted -s "/dev/$partition_device" mkpart primary btrfs "${root}M" 100%
+        
+        # Formattare la partizione root come BTRFS con sottovolume "@"
+        mkfs.btrfs -f "/dev/$partition_device"1
+        mount -o noatime,ssd,space_cache=v2,compress=zstd,discard=async,subvol=@ "/dev/$partition_device"1 /mnt
+        mkdir /mnt/home
+        
+        # Formattare la partizione home come BTRFS con sottovolume "@home"
+        mkfs.btrfs -f "/dev/$partition_device"2
+        mount -o noatime,ssd,space_cache=v2,compress=zstd,discard=async,subvol=@home "/dev/$partition_device"2 /mnt/home
+        
+        # Reflector
+        reflector --verbose -c $country -a 6 --sort rate --save /etc/pacman.d/mirrorlist
+        
+        # Installare il sistema di base
+        pacstrap -K /mnt base base-devel $kernel linux-firmware intel-ucode btrfs-progs
+        
+        # Generare il file fstab
+        genfstab -U /mnt >> /mnt/etc/fstab
+        
+        # Configurare il locale
+        #cp /etc/locale.gen /mnt/etc/
+        arch-chroot /mnt "locale-gen $locale_locale && echo LANG=$locale_locale > /etc/locale.conf && echo KEYMAP=$locale_keymap > /etc/vconsole.conf && ln -sf /usr/share/zoneinfo/$locale_timezone /etc/localtime"
+        
+        # Impostare il nome host
+        echo "$networking_hostname" > /mnt/etc/hostname
+        
+        # Impostazioni di rete
+        arch-chroot /mnt "pacman -Syyu --noconfirm && pacman -S networkmanager --noconfirm && systemctl enable NetworkManager"
+        
+        # Creare un utente regolare
+        arch-chroot /mnt  pacman -Sy $user_shell --noconfirm 
+        arch-chroot /mnt  useradd -m -s /bin/$user_shell $user_name
+        arch-chroot /mnt  usermod -c "$real_name" $user_name
+        
+         # Impostare la password dell'utente regolare
+        arch-chroot /mnt echo "$user_name:$user_password" | chpasswd
+        
+        # crea profilo sudoers.d
+        arch-chroot /mnt echo "$user_name ALL=(ALL:ALL) ALL" >> /etc/sudoers.d/$user_name
+        
+        # Impostare la password di root
+        arch-chroot /mnt echo "root:$root_password" | chpasswd
+        
+        # Abilita e configura zram
+        arch-chroot /mnt echo "zram" > /etc/modules-load.d/zram.conf
+        arch-chroot /mnt echo 'ACTION=="add", KERNEL=="zram0", ATTR{comp_algorithm}="zstd", ATTR{disksize}="'$zram'", RUN="/usr/bin/mkswap -U clear /dev/%k" , TAG+="systemd"' > /etc/udev/rules.d/99-zram.rules
+        arch-chroot /mnt echo "/dev/zram0 none swap defaults,pri=100 0 0 " >> /etc/fstab
+
+        # Configura GRUB
+        arch-chroot /mnt "pacman -Syyu --noconfirm && pacman -S grub --noconfirm && grub-install --target=i386-pc /dev/$partition_device && grub-mkconfig -o /boot/grub/grub.cfg"
+        
+        # copia pacman.conf
+        cp -rp /etc/pacman.conf /mnt/etc/
+
+        # Installazione pacchetti
+        arch-chroot /mnt "pacman -Sy $core --noconfirm"
+        arch-chroot /mnt "systemctl enable $service"
+
+        # finalizzazione
+        cp -rp /usr/bin/{core-brain,core-terminal-nord-theme,updates} /mnt/usr/bin/
+        chmod -R 755 /mnt/usr/bin/{core-brain,core-terminal-nord-theme,updates}
+        cp -rp /home/liveuser/.zshrc /mnt/home/$user_name/.config/
+        cp -rp /etc/core/zsh  /mnt/etc/
+        cp -rp /usr/share/fonts /mnt/usr/share/
+        mkdir -p /mnt/home/$user_name/.config/autostart
+        cp -rp /home/liveuser/.config/autostart/startx.desktop /mnt/home/$user_name/.config/autostart/
+        cp -rp /etc/os-release /mnt/etc/
+        cp -rp /home/liveuser/Templates /mnt/home/$user_name/
+
+        # copia pacman.conf con richiesta firme
+        cp -rp /etc/core/pacman.conf /mnt/etc/
+    }
+    
+    legacy
+
+
+fi
