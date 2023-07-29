@@ -83,6 +83,11 @@ services="gdm NetworkManager firewalld bluetooth cronie reflector cups"
         arch-chroot /mnt /bin/bash -c "locale-gen $locale_locale && echo LANG=$locale_locale > /etc/locale.conf && echo KEYMAP=$locale_keymap > /etc/vconsole.conf && ln -sf /usr/share/zoneinfo/$locale_timezone /etc/localtime"
         echo "$networking_hostname" > /mnt/etc/hostname
         
+
+        # Impostare la password di root
+        decrypted2=$(echo "$root_password" | openssl enc -d -aes256 -base64 -k "$key")
+        arch-chroot /mnt /bin/bash -c "echo root:$decrypted2 | chpasswd"
+
         # Creare un utente regolare
         arch-chroot /mnt /bin/bash -c "pacman -Sy $user_shell --noconfirm" 
         arch-chroot /mnt /bin/bash -c "useradd -m -s /bin/$user_shell $user_name"
