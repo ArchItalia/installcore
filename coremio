@@ -21,8 +21,12 @@ zr=$(echo "$json" | jq -r '.partition.zram')
 zram="${zr}G"
 kernel=$(echo "$json" | jq -r '.kernel')
 key=$(echo "$json" | jq -r '.users[0].key')
-core="acpi alsa-utils bc bluez bluez-utils clean cronie cups curl dmidecode dosfstools eog evince exfatprogs extension-manager f2fs-tools firefox firewalld fuse gdisk git gdm gnome-calculator gnome-calendar gnome-clocks gnome-control-center gnome-keyring gnome-maps gnome-shell gnome-shell-extensions gnome-terminal gnome-text-editor htop iw jq mtools nautilus net-tools netctl ntfs-3g nano neofetch openvpn openssh pipewire-pulse reflector timeshift tree usbutils vim wget wireless_tools wpa_supplicant xfsprogs"
-service="gdm NetworkManager firewalld bluetooth cronie reflector cups"
+pacstrap="base base-devel $kernel linux-firmware intel-ucode btrfs-progs"
+core="core-base architalia-fonts core-gtk-theme core-gnome-backgrounds core-icons-theme core-keyring core-extensions-base core-terminal-nord-theme"
+de="xorg gnome-shell gnome-control-center gnome-keyring gnome-terminal gnome-text-editor gnome-shell-extensions xdg-user-dirs-gtk xdg-user-dirs gvfs gdm nautilus"
+base="networkmanager wpa_supplicant wireless_tools netctl net-tools iw cups alsa-utils pipewire-pulse mtools dosfstools exfatprogs fuse firewalld acpi cronie git wget reflector bluez bluez-utils"
+generic="gnome-shell-extension-desktop-icons-ng firefox yay timeshift extension-manager evince eog gparted gsmartcontrol mpv gnome-calculator gnome-clocks gnome-calendar htop gnome-system-monitor vim nano"
+services="gdm NetworkManager firewalld bluetooth cronie reflector cups"
 
 
 
@@ -30,23 +34,14 @@ if [ "$partition_efi" = "true" ]; then
 
     
     uefi(){
-        # Cancellare completamente il disco specificato come "partition_device"
+   
         sgdisk --zap-all "/dev/$partition_device"
-        
-        # Creare una tabella di partizione GPT
         parted -s "/dev/$partition_device" mklabel gpt
-        
-        # Crea una partizione EFI da 1 GB
         parted -s "/dev/$partition_device" mkpart primary fat32 1MiB 1GiB
         parted -s "/dev/$partition_device" set 1 esp on
-        
-        # Crea una partizione root in BTRFS con sottovolume "@"
         parted -s "/dev/$partition_device" mkpart primary btrfs 1GiB "${root}M"
-        
-        # Crea una partizione home in BTRFS con sottovolume "@home"
         parted -s "/dev/$partition_device" mkpart primary btrfs "${root}M" 100%
         
-        # Formattare la partizione EFI come FAT32
         mkfs.fat -F32 "/dev/$partition_device"1
         mkfs.btrfs -f "/dev/$partition_device"2
         mkfs.btrfs -f "/dev/$partition_device"3
@@ -57,7 +52,6 @@ if [ "$partition_efi" = "true" ]; then
         mount "/dev/$partition_device"3 /mnt
         btrfs su cr /mnt/@home  
         
-        # Smontare e rimontare le partizioni
         umount /mnt
         mount -o noatime,ssd,space_cache=v2,compress=zstd,discard=async,subvol=@ "/dev/$partition_device"2 /mnt
         mkdir /mnt/home
@@ -65,24 +59,12 @@ if [ "$partition_efi" = "true" ]; then
         mkdir /mnt/boot
         mount "/dev/$partition_device"1 /mnt/boot
         
-        
-        # reflector
         reflector --verbose -c $country -a 6 --sort rate --save /etc/pacman.d/mirrorlist
-        
-        # Installare il sistema base
-        pacstrap -K /mnt base base-devel $kernel linux-firmware intel-ucode btrfs-progs
-        
-        # Generare il file fstab
+        pacstrap -K /mnt $pacstrap
         genfstab -U /mnt > /mnt/etc/fstab
         
-        
-        
-        # Chroot nel nuovo sistema installato
         arch-chroot /mnt /bin/bash -c "locale-gen $locale_locale && echo LANG=$locale_locale > /etc/locale.conf && echo KEYMAP=$locale_keymap > /etc/vconsole.conf && ln -sf /usr/share/zoneinfo/$locale_timezone /etc/localtime"
-        
-        # Impostare il nome host
         echo "$networking_hostname" > /mnt/etc/hostname
-        
         
         # Creare un utente regolare
         arch-chroot /mnt /bin/bash -c "pacman -Sy $user_shell --noconfirm" 
@@ -115,20 +97,17 @@ if [ "$partition_efi" = "true" ]; then
         # copia pacman.conf per installazione
         cp -rp /etc/pacman.conf /mnt/etc/
 
+
         # Installazione pacchetti
-        arch-chroot /mnt /bin/bash -c "pacman -Sy $core --noconfirm"
-        arch-chroot /mnt /bin/bash -c "systemctl enable $service"
+        arch-chroot /mnt /bin/bash -c "pacman -Sy $core $base $de $generic --noconfirm"
+        arch-chroot /mnt /bin/bash -c "systemctl enable $services"
 
         # finalizzazione
-        cp -rp /usr/bin/{core-brain,core-terminal-nord-theme,updates} /mnt/usr/bin/
-        chmod -R 755 /mnt/usr/bin/{core-brain,core-terminal-nord-theme,updates}
-        cp -rp /home/liveuser/.zshrc /mnt/home/$user_name/.config/
-        cp -rp /etc/core/zsh  /mnt/etc/
-        cp -rp /usr/share/fonts /mnt/usr/share/
+        cp -rp /etc/core/.zshrc /mnt/home/$user_name/
         mkdir -p /mnt/home/$user_name/.config/autostart
         cp -rp /home/liveuser/.config/autostart/startx.desktop /mnt/home/$user_name/.config/autostart/
-        cp -rp /etc/os-release /mnt/etc/
         cp -rp /home/liveuser/Templates /mnt/home/$user_name/
+        
 
         # copia pacman.conf con richiesta firme
         cp -rp /etc/core/pacman.conf /mnt/etc/
@@ -207,18 +186,13 @@ else
         cp -rp /etc/pacman.conf /mnt/etc/
 
         # Installazione pacchetti
-        arch-chroot /mnt /bin/bash -c "pacman -Sy $core --noconfirm"
-        arch-chroot /mnt /bin/bash -c "systemctl enable $service"
+        arch-chroot /mnt /bin/bash -c "pacman -Sy $core $base $de $generic --noconfirm"
+        arch-chroot /mnt /bin/bash -c "systemctl enable $services"
 
         # finalizzazione
-        cp -rp /usr/bin/{core-brain,core-terminal-nord-theme,updates} /mnt/usr/bin/
-        chmod -R 755 /mnt/usr/bin/{core-brain,core-terminal-nord-theme,updates}
-        cp -rp /home/liveuser/.zshrc /mnt/home/$user_name/.config/
-        cp -rp /etc/core/zsh  /mnt/etc/
-        cp -rp /usr/share/fonts /mnt/usr/share/
+        cp -rp /etc/core/.zshrc /mnt/home/$user_name/
         mkdir -p /mnt/home/$user_name/.config/autostart
         cp -rp /home/liveuser/.config/autostart/startx.desktop /mnt/home/$user_name/.config/autostart/
-        cp -rp /etc/os-release /mnt/etc/
         cp -rp /home/liveuser/Templates /mnt/home/$user_name/
 
         # copia pacman.conf con richiesta firme
