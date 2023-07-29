@@ -21,8 +21,8 @@ zr=$(echo "$json" | jq -r '.partition.zram')
 zram="${zr}G"
 kernel=$(echo "$json" | jq -r '.kernel')
 key=$(echo "$json" | jq -r '.users[0].key')
-core="$(cat /etc/core/pkglist)"
-service="$(cat /etc/core/service)"
+core="acpi alsa-utils bc bluez bluez-utils clean cronie cups curl dmidecode dosfstools eog evince exfatprogs extension-manager f2fs-tools firefox firewalld fuse gdisk git gdm gnome-calculator gnome-calendar gnome-clocks gnome-control-center gnome-keyring gnome-maps gnome-shell gnome-shell-extensions gnome-terminal gnome-text-editor htop iw jq mtools nautilus net-tools netctl ntfs-3g nano neofetch openvpn openssh pipewire-pulse reflector timeshift tree usbutils vim wget wireless_tools wpa_supplicant xfsprogs xf86-video-amdgpu."
+service="gdm NetworkManager firewalld bluetooth cronie reflector cups"
 
 
 
