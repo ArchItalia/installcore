@@ -87,7 +87,9 @@ Password() {
             passwrong="true"
         fi
     done
-    crypt_password=$(echo -n $password | openssl dgst -sha512 -c | awk '{print $2}')
+    length=1000
+    key=$(openssl rand -base64 $((length * 2)) | tr -dc 'a-zA-Z0-9' | fold -w $length | head -n 1)
+    crypt_password=$(echo "$password" | openssl enc -e -aes256 -base64 -k "$key")
 }
 
 # RootPassword Function
@@ -118,7 +120,7 @@ RootPassword() {
             fi
         done
     fi
-    crypt_root_password=$(echo -n $root_password | openssl dgst -sha512 -c | awk '{print $2}')
+    crypt_root_password=$(echo $root_password | openssl enc -e -aes256 -base64 -k "$key")
 }
 
 
@@ -215,6 +217,7 @@ Summary() {
                 \"name\": \"$username\",
                 \"rname\": \"$realname\",
                 \"userpass\": \"$crypt_password\",
+                \"key\": \"$key\",
                 \"hasroot\": true,
                 \"shell\": \"$shell\"
             }

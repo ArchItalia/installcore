@@ -20,10 +20,9 @@ root_password=$(echo "$json" | jq -r '.rootpass')
 zr=$(echo "$json" | jq -r '.partition.zram')
 zram="${zr}G"
 kernel=$(echo "$json" | jq -r '.kernel')
-service="gdm firewalld bluetooth cronie reflector" # Service
-core="architalia-fonts core-keyring core-gtk-theme core-icons-theme core-extensions-base core-gnome-backgrounds gnome-shell-extension-desktop-icons-ng extension-manager timeshift yay htop mpv gimp eog evince gsmartcontrol gparted gnome-clocks gnome-calculator gnome-calendar firewalld acpi cronie git reflector bluez bluez-utils mtools dosfstools exfatprogs fuse alsa-utils pipewire-pulse wpa_supplicant wireless_tools netctl net-tools iw gdm xorg gnome-shell nautilus gnome-terminal gvfs gnome-control-center xdg-user-dirs-gtk  gnome-text-editor gnome-keyring gnome-system-monitor"
-
-
+key=$(echo "$json" | jq -r '.users[0].key')
+service="NetworkManager gdm firewalld bluetooth cronie reflector" # Service
+core="networkmanager architalia-fonts core-keyring core-gtk-theme core-icons-theme core-extensions-base core-gnome-backgrounds gnome-shell-extension-desktop-icons-ng extension-manager timeshift yay htop mpv gimp eog evince gsmartcontrol gparted gnome-clocks gnome-calculator gnome-calendar firewalld acpi cronie git reflector bluez bluez-utils mtools dosfstools exfatprogs fuse alsa-utils pipewire-pulse wpa_supplicant wireless_tools netctl net-tools iw gdm xorg gnome-shell nautilus gnome-terminal gvfs gnome-control-center xdg-user-dirs-gtk  gnome-text-editor gnome-keyring gnome-system-monitor"
 
 
 
@@ -85,28 +84,31 @@ if [ "$partition_efi" = "true" ]; then
         # Impostare il nome host
         echo "$networking_hostname" > /mnt/etc/hostname
         
-        # Impostazioni di rete
-        arch-chroot /mnt "pacman -Syyu --noconfirm && pacman -S networkmanager --noconfirm && systemctl enable NetworkManager"
         
 
         # Creare un utente regolare
-        arch-chroot /mnt  pacman -Sy $user_shell --noconfirm 
-        arch-chroot /mnt  useradd -m -s /bin/$user_shell $user_name
-        arch-chroot /mnt  usermod -c "$real_name" $user_name
+        arch-chroot /mnt /bin/bash -c "pacman -Sy $user_shell --noconfirm" 
+        arch-chroot /mnt /bin/bash -c "useradd -m -s /bin/$user_shell $user_name"
+        arch-chroot /mnt /bin/bash -c "usermod -aG wheel $user_name"
+        arch-chroot /mnt /bin/bash -c "usermod -c '$real_name' $user_name"
         
         # Impostare la password dell'utente regolare
-        arch-chroot /mnt /bin/bash -c "echo $user_name:$user_password | chpasswd"
+        decrypted=$(echo "$user_password" | openssl enc -d -aes256 -base64 -k "$key")
+        arch-chroot /mnt /bin/bash -c "echo $user_name:$decrypted| chpasswd"
         
         # crea profilo sudoers.d
-        arch-chroot /mnt echo "$user_name ALL=(ALL:ALL) ALL" >> /etc/sudoers.d/$user_name
+        arch-chroot /mnt /bin/bash -c "echo '$user_name ALL=(ALL:ALL) ALL' >> /etc/sudoers.d/$user_name"
         
         # Impostare la password di root
-        arch-chroot /mnt /bin/bash -c "echo root:$root_password | chpasswd"
+        decrypted2=$(echo "$root_password" | openssl enc -d -aes256 -base64 -k "$key")
+        arch-chroot /mnt /bin/bash -c "echo root:$decrypted2 | chpasswd"
 
-        # Abilita e configura zram
-        arch-chroot /mnt echo "zram" > /etc/modules-load.d/zram.conf
-        arch-chroot /mnt echo 'ACTION=="add", KERNEL=="zram0", ATTR{comp_algorithm}="zstd", ATTR{disksize}="'$zram'", RUN="/usr/bin/mkswap -U clear /dev/%k" , TAG+="systemd"' > /etc/udev/rules.d/99-zram.rules
-        arch-chroot /mnt echo "/dev/zram0 none swap defaults,pri=100 0 0 " >> /etc/fstab
+         # Abilita e configura zram
+        zrfstb="/dev/zram0 none swap defaults,pri=100 0 0 "
+        zrx='ACTION=="add", KERNEL=="zram0", ATTR{comp_algorithm}="zstd", ATTR{disksize}="'$zram'", RUN="/usr/bin/mkswap -U clear /dev/%k" , TAG+="systemd"' 
+        arch-chroot /mnt /bin/bash -c  "echo 'zram' > /etc/modules-load.d/zram.conf"
+        arch-chroot /mnt /bin/bash -c  "echo $zrx > /etc/udev/rules.d/99-zram.rules"
+        arch-chroot /mnt /bin/bash -c  "echo $zrfstb" >> /etc/fstab
 
         # Configura systemd-boot
         arch-chroot /mnt /bin/bash -c "bootctl --path=/boot install && echo 'default arch-*' >> /boot/loader/loader.conf && echo 'timeout 5' >> /boot/loader/loader.conf && echo 'title Core Linux' > /boot/loader/entries/arch.conf && echo 'linux /vmlinuz-linux' >> /boot/loader/entries/arch.conf && echo 'initrd /initramfs-linux.img' >> /boot/loader/entries/arch.conf && echo 'options root=/dev/'$partition_device'2 rootflags=subvol=@ rw quiet loglevel=3 rd.system.show_status=auto rd.udev.log_level=3' >> /boot/loader/entries/arch.conf"
@@ -174,37 +176,40 @@ else
         # Impostare il nome host
         echo "$networking_hostname" > /mnt/etc/hostname
         
-        # Impostazioni di rete
-        arch-chroot /mnt "pacman -Syyu --noconfirm && pacman -S networkmanager --noconfirm && systemctl enable NetworkManager"
         
         # Creare un utente regolare
-        arch-chroot /mnt  pacman -Sy $user_shell --noconfirm 
-        arch-chroot /mnt  useradd -m -s /bin/$user_shell $user_name
-        arch-chroot /mnt  usermod -c "$real_name" $user_name
+        arch-chroot /mnt /bin/bash -c "pacman -Sy $user_shell --noconfirm" 
+        arch-chroot /mnt /bin/bash -c "useradd -m -s /bin/$user_shell $user_name"
+        arch-chroot /mnt /bin/bash -c "usermod -aG wheel $user_name"
+        arch-chroot /mnt /bin/bash -c "usermod -c '$real_name' $user_name"
         
-         # Impostare la password dell'utente regolare
-        arch-chroot /mnt echo "$user_name:$user_password" | chpasswd
+        # Impostare la password dell'utente regolare
+        decrypted=$(echo "$user_password" | openssl enc -d -aes256 -base64 -k "$key")
+        arch-chroot /mnt /bin/bash -c "echo $user_name:$decrypted| chpasswd"
         
         # crea profilo sudoers.d
-        arch-chroot /mnt echo "$user_name ALL=(ALL:ALL) ALL" >> /etc/sudoers.d/$user_name
+        arch-chroot /mnt /bin/bash -c "echo '$user_name ALL=(ALL:ALL) ALL' >> /etc/sudoers.d/$user_name"
         
         # Impostare la password di root
-        arch-chroot /mnt echo "root:$root_password" | chpasswd
+        decrypted2=$(echo "$root_password" | openssl enc -d -aes256 -base64 -k "$key")
+        arch-chroot /mnt /bin/bash -c "echo root:$decrypted2 | chpasswd"
         
         # Abilita e configura zram
-        arch-chroot /mnt echo "zram" > /etc/modules-load.d/zram.conf
-        arch-chroot /mnt echo 'ACTION=="add", KERNEL=="zram0", ATTR{comp_algorithm}="zstd", ATTR{disksize}="'$zram'", RUN="/usr/bin/mkswap -U clear /dev/%k" , TAG+="systemd"' > /etc/udev/rules.d/99-zram.rules
-        arch-chroot /mnt echo "/dev/zram0 none swap defaults,pri=100 0 0 " >> /etc/fstab
+        zrfstb="/dev/zram0 none swap defaults,pri=100 0 0 "
+        zrx='ACTION=="add", KERNEL=="zram0", ATTR{comp_algorithm}="zstd", ATTR{disksize}="'$zram'", RUN="/usr/bin/mkswap -U clear /dev/%k" , TAG+="systemd"' 
+        arch-chroot /mnt /bin/bash -c  "echo 'zram' > /etc/modules-load.d/zram.conf"
+        arch-chroot /mnt /bin/bash -c  "echo $zrx > /etc/udev/rules.d/99-zram.rules"
+        arch-chroot /mnt /bin/bash -c  "echo $zrfstb" >> /etc/fstab
 
         # Configura GRUB
-        arch-chroot /mnt "pacman -Syyu --noconfirm && pacman -S grub --noconfirm && grub-install --target=i386-pc /dev/$partition_device && grub-mkconfig -o /boot/grub/grub.cfg"
+        arch-chroot /mnt /bin/bash -c  "pacman -Syyu --noconfirm && pacman -S grub --noconfirm && grub-install --target=i386-pc /dev/$partition_device && grub-mkconfig -o /boot/grub/grub.cfg"
         
         # copia pacman.conf
         cp -rp /etc/pacman.conf /mnt/etc/
 
         # Installazione pacchetti
-        arch-chroot /mnt "pacman -Sy $core --noconfirm"
-        arch-chroot /mnt "systemctl enable $service"
+        arch-chroot /mnt /bin/bash -c "pacman -Sy $core --noconfirm"
+        arch-chroot /mnt /bin/bash -c "systemctl enable $service"
 
         # finalizzazione
         cp -rp /usr/bin/{core-brain,core-terminal-nord-theme,updates} /mnt/usr/bin/
