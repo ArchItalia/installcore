@@ -21,8 +21,8 @@ zr=$(echo "$json" | jq -r '.partition.zram')
 zram="${zr}G"
 kernel=$(echo "$json" | jq -r '.kernel')
 key=$(echo "$json" | jq -r '.users[0].key')
-core=$(cat /etc/core/pkglist)
-service=$(cat /etc/core/service)
+core="$(cat /etc/core/pkglist)"
+service="$(cat /etc/core/service)"
 
 
 
