@@ -56,7 +56,7 @@ Keymap() {
 }
 
 Locale() {
-    locale=$(cat /etc/locales | gum filter --placeholder "select a locale")
+    locale=$(cat /etc/core/locales | gum filter --placeholder "select a locale")
 }
 
 Username() {
@@ -169,7 +169,7 @@ UEFICheck() {
 }
 
 Reflector() {
-    country=$(cat /etc/country | gum filter --placeholder "select a mirrorlist country")
+    country=$(cat /etc/core/country | gum filter --placeholder "select a mirrorlist country")
 }
 
 

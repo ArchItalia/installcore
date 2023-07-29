@@ -21,8 +21,8 @@ zr=$(echo "$json" | jq -r '.partition.zram')
 zram="${zr}G"
 kernel=$(echo "$json" | jq -r '.kernel')
 key=$(echo "$json" | jq -r '.users[0].key')
-service="NetworkManager gdm firewalld bluetooth cronie reflector" # Service
-core="networkmanager architalia-fonts core-keyring core-gtk-theme core-icons-theme core-extensions-base core-gnome-backgrounds gnome-shell-extension-desktop-icons-ng extension-manager timeshift yay htop mpv gimp eog evince gsmartcontrol gparted gnome-clocks gnome-calculator gnome-calendar firewalld acpi cronie git reflector bluez bluez-utils mtools dosfstools exfatprogs fuse alsa-utils pipewire-pulse wpa_supplicant wireless_tools netctl net-tools iw gdm xorg gnome-shell nautilus gnome-terminal gvfs gnome-control-center xdg-user-dirs-gtk  gnome-text-editor gnome-keyring gnome-system-monitor"
+core=$(cat /etc/core/pkglist)
+service=$(cat /etc/core/service)
 
 
 
@@ -75,8 +75,7 @@ if [ "$partition_efi" = "true" ]; then
         # Generare il file fstab
         genfstab -U /mnt > /mnt/etc/fstab
         
-        # Copiare il file di configurazione del locale
-        #cp /etc/locale.gen /mnt/etc/
+        
         
         # Chroot nel nuovo sistema installato
         arch-chroot /mnt /bin/bash -c "locale-gen $locale_locale && echo LANG=$locale_locale > /etc/locale.conf && echo KEYMAP=$locale_keymap > /etc/vconsole.conf && ln -sf /usr/share/zoneinfo/$locale_timezone /etc/localtime"
@@ -85,7 +84,6 @@ if [ "$partition_efi" = "true" ]; then
         echo "$networking_hostname" > /mnt/etc/hostname
         
         
-
         # Creare un utente regolare
         arch-chroot /mnt /bin/bash -c "pacman -Sy $user_shell --noconfirm" 
         arch-chroot /mnt /bin/bash -c "useradd -m -s /bin/$user_shell $user_name"
