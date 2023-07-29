@@ -129,7 +129,6 @@ services="gdm NetworkManager firewalld bluetooth cronie reflector cups"
     packages(){
         
         # Installazione pacchetti
-        # !!!!!!!!!! provare a far installare tutto da pacstrap!!!
         arch-chroot /mnt /bin/bash -c "pacman -Sy $core $base $de $generic --noconfirm"
         arch-chroot /mnt /bin/bash -c "systemctl enable $services"
 
