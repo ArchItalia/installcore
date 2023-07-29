@@ -30,11 +30,11 @@ wireless_tools
 cups
 xorg
 gnome-shell
+gnome-shell-extensions
 gnome-control-center
 gnome-keyring
 gnome-terminal
 gnome-text-editor
-gnome-shell-extensions
 gnome-calendar
 gnome-clocks
 gnome-calculator
