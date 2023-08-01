@@ -78,6 +78,7 @@ base(){
         cp -rp /etc/pacman.conf /mnt/etc/
         cp -rp /tmp/config.json /usr/bin/inc-files/
         cp -rp /usr/bin/inc-files /mnt/home/
+        cp -rp /usr/share/fonts /mnt/usr/share/
 
     }
 
