@@ -63,6 +63,7 @@ uefi(){
         
         # configurazioni varie per installazione
         cp -rp /etc/pacman.conf /mnt/etc/
+        cp -rp /tmp/config.json /usr/bin/inc-files/
         cp -rp /usr/bin/inc-files /mnt/home/
 
     }

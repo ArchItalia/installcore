@@ -1,7 +1,7 @@
 #!/usr/bin/bash
 
 # Leggi il file JSON in una variabile
-json=$(cat "/tmp/config.json")
+json=$(cat "/home/inc-files/config.json")
 
 # Crea le variabili leggendo dal JSON
 partition_device=$(echo "$json" | jq -r '.partition.device')
