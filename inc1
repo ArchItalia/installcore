@@ -40,22 +40,35 @@ uefi(){
         mount "/dev/$partition_device"1 /mnt/boot
     }    
 
-    legacy(){
-        
-        sgdisk --zap-all "/dev/$partition_device"
-        parted -s "/dev/$partition_device" mklabel msdos
-        parted -s "/dev/$partition_device" mkpart primary btrfs 1MiB "${root}M"
-        parted -s "/dev/$partition_device" mkpart primary btrfs "${root}M" 100%
-        
-        mkfs.btrfs -f "/dev/$partition_device"1
-        mount -o noatime,ssd,space_cache=v2,compress=zstd,discard=async,subvol=@ "/dev/$partition_device"1 /mnt
-        mkdir /mnt/home
+legacy(){
 
+        # Crea la partizione / (root) Btrfs e la formatta
+        parted -s "/dev/$partition_device"  mklabel msdos
+        parted -s "/dev/$partition_device"  mkpart primary btrfs 1MiB "${root}M"
+        parted -s "/dev/$partition_device"  mkpart primary btrfs "${root}M" 100%
+        mkfs.btrfs -f "/dev/$partition_device"1
         mkfs.btrfs -f "/dev/$partition_device"2
+        
+        # Monta la partizione / (root) e crea il sottovolume "@"
+        mount "/dev/$partition_device"1 /mnt
+        btrfs subvolume create /mnt/@
+        umount /mnt
+        
+        # Monta la partizione /home e crea il sottovolume "@home"
+        mount "/dev/$partition_device"2 /mnt/home
+        btrfs subvolume create /mnt/home/@home
+        umount /mnt/home
+        
+        # Monta il sottovolume "@"
+        mount -o noatime,ssd,space_cache=v2,compress=zstd,discard=async,subvol=@ "/dev/$partition_device"1 /mnt
+        
+        # Monta il sottovolume "@home"
         mount -o noatime,ssd,space_cache=v2,compress=zstd,discard=async,subvol=@home "/dev/$partition_device"2 /mnt/home
+
+        
     }    
 
-    base(){
+base(){
 
         reflector --verbose -c $country -a 6 --sort rate --save /etc/pacman.d/mirrorlist
         pacstrap -K /mnt $pacstrap
