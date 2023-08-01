@@ -1,0 +1,80 @@
+#!/usr/bin/bash
+
+# Leggi il file JSON in una variabile
+json=$(cat "/tmp/config.json")
+
+# Crea le variabili leggendo dal JSON
+partition_device=$(echo "$json" | jq -r '.partition.device')
+partition_efi=$(echo "$json" | jq -r '.partition.efi')
+root=$(echo "$json" | jq -r '.partition.root')
+country=$(echo "$json" | jq -r '.locale.reflector')
+kernel=$(echo "$json" | jq -r '.kernel')
+pacstrap="base base-devel $kernel linux-firmware intel-ucode btrfs-progs"
+
+
+
+uefi(){
+   
+        sgdisk --zap-all "/dev/$partition_device"
+        parted -s "/dev/$partition_device" mklabel gpt
+        parted -s "/dev/$partition_device" mkpart primary fat32 1MiB 1GiB
+        parted -s "/dev/$partition_device" set 1 esp on
+        parted -s "/dev/$partition_device" mkpart primary btrfs 1GiB "${root}M"
+        parted -s "/dev/$partition_device" mkpart primary btrfs "${root}M" 100%
+        
+        mkfs.fat -F32 "/dev/$partition_device"1
+        mkfs.btrfs -f "/dev/$partition_device"2
+        mkfs.btrfs -f "/dev/$partition_device"3
+        
+        mount "/dev/$partition_device"2 /mnt           
+        btrfs su cr /mnt/@  
+        umount /mnt 
+        mount "/dev/$partition_device"3 /mnt
+        btrfs su cr /mnt/@home  
+        umount /mnt
+        
+        mount -o noatime,ssd,space_cache=v2,compress=zstd,discard=async,subvol=@ "/dev/$partition_device"2 /mnt
+        mkdir /mnt/home
+        mount -o noatime,ssd,space_cache=v2,compress=zstd,discard=async,subvol=@home "/dev/$partition_device"3 /mnt/home
+        mkdir /mnt/boot
+        mount "/dev/$partition_device"1 /mnt/boot
+    }    
+
+    legacy(){
+        
+        sgdisk --zap-all "/dev/$partition_device"
+        parted -s "/dev/$partition_device" mklabel msdos
+        parted -s "/dev/$partition_device" mkpart primary btrfs 1MiB "${root}M"
+        parted -s "/dev/$partition_device" mkpart primary btrfs "${root}M" 100%
+        
+        mkfs.btrfs -f "/dev/$partition_device"1
+        mount -o noatime,ssd,space_cache=v2,compress=zstd,discard=async,subvol=@ "/dev/$partition_device"1 /mnt
+        mkdir /mnt/home
+
+        mkfs.btrfs -f "/dev/$partition_device"2
+        mount -o noatime,ssd,space_cache=v2,compress=zstd,discard=async,subvol=@home "/dev/$partition_device"2 /mnt/home
+    }    
+
+    base(){
+
+        reflector --verbose -c $country -a 6 --sort rate --save /etc/pacman.d/mirrorlist
+        pacstrap -K /mnt $pacstrap
+        genfstab -U /mnt > /mnt/etc/fstab
+        
+        # configurazioni varie per installazione
+        cp -rp /etc/pacman.conf /mnt/etc/
+        cp -rp /usr/bin/inc-files /mnt/home/
+
+    }
+
+
+
+if [ "$partition_efi" = "true" ]; then 
+    uefi
+else
+    legacy
+fi
+        
+base
+
+arch-chroot /mnt /bin/bash -c "/home/inc-files/inc2"
