@@ -111,5 +111,5 @@ packages
 zram
 rm -rf /home/inc-files
 cp -rp /etc/gtk-4.0 /home/$user_name/.config/
-chowd -R $user_name:$user_name /home/$user_name
+chown -R $user_name:$user_name /home/$user_name
 chmod -R 755 /home/$user_name
