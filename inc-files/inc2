@@ -25,7 +25,7 @@ de="xorg gnome-shell gnome-control-center gnome-keyring gnome-terminal gnome-tex
 base="networkmanager wpa_supplicant wireless_tools netctl net-tools iw cups alsa-utils pipewire-pulse mtools dosfstools exfatprogs fuse firewalld acpi cronie git wget reflector bluez bluez-utils"
 generic="gnome-shell-extension-desktop-icons-ng firefox yay timeshift extension-manager evince eog gparted gsmartcontrol mpv gnome-calculator gnome-clocks gnome-calendar htop gnome-system-monitor vim nano"
 services="gdm NetworkManager firewalld bluetooth cronie reflector cups"
-face=$(find /home/inc-files/legacy -maxdepth 1 -type f -name "*.jpg" | shuf -n 1)
+
 
 
 

@@ -55,6 +55,7 @@ legacy(){
         umount /mnt
         
         # Monta la partizione /home e crea il sottovolume "@home"
+        mkdir -p /mnt/home
         mount "/dev/$partition_device"2 /mnt/home
         btrfs subvolume create /mnt/home/@home
         umount /mnt/home
