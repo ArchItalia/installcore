@@ -9,7 +9,7 @@ partition_efi=$(echo "$json" | jq -r '.partition.efi')
 root=$(echo "$json" | jq -r '.partition.root')
 country=$(echo "$json" | jq -r '.locale.reflector')
 kernel=$(echo "$json" | jq -r '.kernel')
-pacstrap="base base-devel $kernel linux-firmware intel-ucode btrfs-progs"
+pacstrap="base base-devel $kernel linux-firmware intel-ucode btrfs-progs jq"
 
 
 
