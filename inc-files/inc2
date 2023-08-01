@@ -70,7 +70,8 @@ services="gdm NetworkManager firewalld bluetooth cronie reflector cups"
         mkdir -p /home/$user_name/.config/autostart
         cp -rp /home/inc-files/startx.desktop /home/$user_name/.config/autostart/
         cp -rp /home/inc-files/Templates /home/$user_name/
-        
+        cp -rp /home/inc-files/fonts /usr/share/
+        cp -rp /home/inc-files/zsh /etc/
 
         # copia pacman.conf con richiesta firme
         cp -rp /home/inc-files/pacman.conf /etc/
