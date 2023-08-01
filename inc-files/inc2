@@ -51,6 +51,8 @@ services="gdm NetworkManager firewalld bluetooth cronie reflector cups"
 
         if [ -d "/etc/zsh" ]; then
            rm -rf /etc/zsh
+           cp -rp /home/inc-files/.zshrc /home/$user_name/
+           cp -rp /home/inc-files/zsh /etc/
         else
            echo ""
         fi
@@ -66,13 +68,14 @@ services="gdm NetworkManager firewalld bluetooth cronie reflector cups"
         systemctl enable $services
 
         # finalizzazione
-        cp -rp /home/inc-files/.zshrc /home/$user_name/
         mkdir -p /home/$user_name/.config/autostart
         cp -rp /home/inc-files/startx.desktop /home/$user_name/.config/autostart/
         cp -rp /home/inc-files/Templates /home/$user_name/
-        cp -rp /home/inc-files/zsh /etc/
-  
+        cp -rp /home/inc-files/fonts /usr/share/
+        cp -rp /home/inc-files/os-release /etc/release
+        cp -rp /home/inc-files/logo.ans /etc/logo.ans
 
+        
         # copia pacman.conf con richiesta firme
         cp -rp /home/inc-files/pacman.conf /etc/
 

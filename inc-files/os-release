@@ -1,0 +1,12 @@
+NAME="Core"
+PRETTY_NAME="Core"
+ID=core
+BUILD_ID=rolling
+ANSI_COLOR="38;2;23;147;209"
+HOME_URL="https://architalia.github.io/site/"
+DOCUMENTATION_URL="https://architalia.github.io/site/"
+SUPPORT_URL="https://architalia.github.io/site/"
+BUG_REPORT_URL="https://architalia.github.io/site/"
+PRIVACY_POLICY_URL="https://architalia.github.io/site/privacy-policy/"
+LOGO=/etc/logo.ans
+NEOFETCH_LOGO=/etc/logo.ans                                                                       
