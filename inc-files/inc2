@@ -84,8 +84,22 @@ services="gdm NetworkManager firewalld bluetooth cronie reflector cups"
 
     systemd-boot(){
 
-        pacman -Sy efibootmgr --noconfirm
-        bootctl --path=/boot install && echo 'default arch-*' >> /boot/loader/loader.conf && echo 'timeout 5' >> /boot/loader/loader.conf && echo 'title Core Linux' > /boot/loader/entries/arch.conf && echo 'linux /vmlinuz-linux' >> /boot/loader/entries/arch.conf && echo 'initrd /initramfs-linux.img' >> /boot/loader/entries/arch.conf && echo 'options root=/dev/'$partition_device'2 rootflags=subvol=@ rw quiet loglevel=3 rd.system.show_status=auto rd.udev.log_level=3' >> /boot/loader/entries/arch.conf
+        if [ $partition_device = "nvme0n1" ]; then
+            pacman -Sy efibootmgr --noconfirm
+            bootctl --path=/boot install && echo 'default arch-*' >> /boot/loader/loader.conf && echo 'timeout 5' >> /boot/loader/loader.conf && echo 'title Core Linux' > /boot/loader/entries/arch.conf && echo 'linux /vmlinuz-linux' >> /boot/loader/entries/arch.conf && echo 'initrd /initramfs-linux.img' >> /boot/loader/entries/arch.conf && echo 'options root=/dev/'$partition_device'p2 rootflags=subvol=@ rw quiet loglevel=3 rd.system.show_status=auto rd.udev.log_level=3' >> /boot/loader/entries/arch.conf
+        elif [ $partition_device = "nvme0n2" ]; then
+            pacman -Sy efibootmgr --noconfirm
+            bootctl --path=/boot install && echo 'default arch-*' >> /boot/loader/loader.conf && echo 'timeout 5' >> /boot/loader/loader.conf && echo 'title Core Linux' > /boot/loader/entries/arch.conf && echo 'linux /vmlinuz-linux' >> /boot/loader/entries/arch.conf && echo 'initrd /initramfs-linux.img' >> /boot/loader/entries/arch.conf && echo 'options root=/dev/'$partition_device'p2 rootflags=subvol=@ rw quiet loglevel=3 rd.system.show_status=auto rd.udev.log_level=3' >> /boot/loader/entries/arch.conf
+        elif [ $partition_device = "nvme0n3" ]; then
+            pacman -Sy efibootmgr --noconfirm
+            bootctl --path=/boot install && echo 'default arch-*' >> /boot/loader/loader.conf && echo 'timeout 5' >> /boot/loader/loader.conf && echo 'title Core Linux' > /boot/loader/entries/arch.conf && echo 'linux /vmlinuz-linux' >> /boot/loader/entries/arch.conf && echo 'initrd /initramfs-linux.img' >> /boot/loader/entries/arch.conf && echo 'options root=/dev/'$partition_device'p2 rootflags=subvol=@ rw quiet loglevel=3 rd.system.show_status=auto rd.udev.log_level=3' >> /boot/loader/entries/arch.conf
+        elif [ $partition_device = "nvme0n4" ]; then
+            pacman -Sy efibootmgr --noconfirm
+            bootctl --path=/boot install && echo 'default arch-*' >> /boot/loader/loader.conf && echo 'timeout 5' >> /boot/loader/loader.conf && echo 'title Core Linux' > /boot/loader/entries/arch.conf && echo 'linux /vmlinuz-linux' >> /boot/loader/entries/arch.conf && echo 'initrd /initramfs-linux.img' >> /boot/loader/entries/arch.conf && echo 'options root=/dev/'$partition_device'p2 rootflags=subvol=@ rw quiet loglevel=3 rd.system.show_status=auto rd.udev.log_level=3' >> /boot/loader/entries/arch.conf
+        else
+            pacman -Sy efibootmgr --noconfirm
+            bootctl --path=/boot install && echo 'default arch-*' >> /boot/loader/loader.conf && echo 'timeout 5' >> /boot/loader/loader.conf && echo 'title Core Linux' > /boot/loader/entries/arch.conf && echo 'linux /vmlinuz-linux' >> /boot/loader/entries/arch.conf && echo 'initrd /initramfs-linux.img' >> /boot/loader/entries/arch.conf && echo 'options root=/dev/'$partition_device'2 rootflags=subvol=@ rw quiet loglevel=3 rd.system.show_status=auto rd.udev.log_level=3' >> /boot/loader/entries/arch.conf
+        fi   
     }
 
     grub-legacy(){
