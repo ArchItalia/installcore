@@ -8,9 +8,33 @@ partition_device=$(echo "$json" | jq -r '.partition.device')
 partition_efi=$(echo "$json" | jq -r '.partition.efi')
 root=$(echo "$json" | jq -r '.partition.root')
 country=$(echo "$json" | jq -r '.locale.reflector')
-kernel=$(echo "$json" | jq -r '.kernel')
+kernel=$(echo "$json" | jq -r '.users[0].kernel')
 pacstrap="base base-devel $kernel linux-firmware intel-ucode btrfs-progs jq"
 
+
+
+check_internet() {
+   
+  ping -c 1 8.8.8.8 > /dev/null 2>&1
+    if [ $? -ne 0 ]; then
+        echo -e "\033[0;31mNo internet connection! Aborting..\033[0m"
+        exit
+    else
+        echo ""
+    fi
+}
+
+
+check_partitions(){
+
+if mount | grep "/dev/$partition_device" > /dev/null; then
+    echo -e "\033[0;31mThe disk has mounted partitions! Aborting..\033[0m"
+    exit
+else
+    echo ""
+fi
+
+}
 
 
 uefi(){
@@ -164,13 +188,13 @@ base(){
     }
 
 
-
+check_internet
+check_partitions
 if [ "$partition_efi" = "true" ]; then 
     uefi
 else
     legacy
 fi
-        
+clear
 base
-
 arch-chroot /mnt /bin/bash -c "/home/inc-files/inc2"

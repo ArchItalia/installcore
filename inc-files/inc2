@@ -1,5 +1,6 @@
 #!/usr/bin/bash
 
+
 # Leggi il file JSON in una variabile
 json=$(cat "/home/inc-files/config.json")
 
@@ -9,22 +10,26 @@ partition_efi=$(echo "$json" | jq -r '.partition.efi')
 locale_locale=$(echo "$json" | jq -r '.locale.locale[0]')
 locale_keymap=$(echo "$json" | jq -r '.locale.keymap')
 locale_timezone=$(echo "$json" | jq -r '.locale.timezone')
+localeconf=$(echo "$locale_locale" | cut -d' ' -f1)
 networking_hostname=$(echo "$json" | jq -r '.networking.hostname')
 user_name=$(echo "$json" | jq -r '.users[0].name')
 real_name=$(echo "$json" | jq -r '.users[0].rname')
 user_password=$(echo "$json" | jq -r '.users[0].userpass')
 user_shell=$(echo "$json" | jq -r '.users[0].shell')
+aurhelper=$(echo "$json" | jq -r '.users[0].helper')
+firewall=$(echo "$json" | jq -r '.users[0].fwll')
+kernel=$(echo "$json" | jq -r '.users[0].kernel')
 root_password=$(echo "$json" | jq -r '.rootpass')
 key=$(echo "$json" | jq -r '.users[0].key')
 decrypted=$(echo "$user_password" | openssl enc -d -aes256 -base64 -k "$key")
 decrypted2=$(echo "$root_password" | openssl enc -d -aes256 -base64 -k "$key")
 zr=$(echo "$json" | jq -r '.partition.zram')
 zram="${zr}G"
-core="core-base architalia-fonts core-gtk-theme core-gnome-backgrounds core-icons-theme core-keyring core-extensions-base core-terminal-nord-theme"
+core="core-base architalia-fonts core-gtk-theme core-gnome-backgrounds core-icons-theme core-keyring core-extensions-base core-terminal-nord-theme clean"
 de="xorg gnome-shell gnome-control-center gnome-keyring gnome-terminal gnome-text-editor gnome-shell-extensions xdg-user-dirs-gtk xdg-user-dirs gvfs gdm nautilus"
-base="networkmanager wpa_supplicant wireless_tools netctl net-tools iw cups alsa-utils pipewire-pulse mtools dosfstools exfatprogs fuse firewalld acpi cronie git wget reflector bluez bluez-utils"
-generic="gnome-shell-extension-desktop-icons-ng firefox yay timeshift extension-manager evince eog gparted gsmartcontrol mpv gnome-calculator gnome-clocks gnome-calendar htop gnome-system-monitor vim nano"
-services="gdm NetworkManager firewalld bluetooth cronie reflector cups"
+base="networkmanager wpa_supplicant wireless_tools netctl net-tools iw cups alsa-utils pipewire-pulse mtools dosfstools exfatprogs fuse  acpi cronie git wget reflector bluez bluez-utils"
+generic="$aurhelper gnome-shell-extension-desktop-icons-ng firefox downgrade timeshift extension-manager evince eog gparted gsmartcontrol mpv gnome-calculator gnome-clocks gnome-calendar htop gnome-system-monitor vim nano neofetch"
+services="gdm NetworkManager  bluetooth cronie reflector cups"
 
 
 
@@ -35,7 +40,7 @@ services="gdm NetworkManager firewalld bluetooth cronie reflector cups"
         hwclock --systohc
         echo "$locale_locale" > /etc/locale.gen
         locale-gen
-        echo "$locale_locale" >> /etc/locale.conf
+        echo "LANG=$localeconf" >> /etc/locale.conf
         echo "KEYMAP=$locale_keymap" >> /etc/vconsole.conf  
         echo "$networking_hostname" > /etc/hostname
         echo "127.0.0.1 localhost" >> /etc/hosts 
@@ -66,6 +71,21 @@ services="gdm NetworkManager firewalld bluetooth cronie reflector cups"
         # Installazione pacchetti
         pacman -Sy $core $base $de $generic --noconfirm
         systemctl enable $services
+        
+        if [ $firewall = "ufw" ]; then
+              pacman -Sy ufw gufw --noconfirm
+              
+
+        elif [ $firewall = "firewalld" ]; then
+              pacman -Sy firewalld --noconfirm
+              systemctl enable firewalld
+
+        elif [ $firewall = "No firewall" ]; then
+              echo "no firewall select"      
+        else
+              pacman -Sy $firewall --noconfirm
+        fi
+
 
         # finalizzazione
         mkdir -p /home/$user_name/.config/autostart
@@ -78,7 +98,7 @@ services="gdm NetworkManager firewalld bluetooth cronie reflector cups"
 
         
         # copia pacman.conf con richiesta firme
-        cp -rp /home/inc-files/pacman.conf /etc/
+        #cp -rp /home/inc-files/pacman.conf /etc/
 
     }
 
@@ -87,19 +107,19 @@ services="gdm NetworkManager firewalld bluetooth cronie reflector cups"
 
         if [ $partition_device = "nvme0n1" ]; then
             pacman -Sy efibootmgr --noconfirm
-            bootctl --path=/boot install && echo 'default arch-*' >> /boot/loader/loader.conf && echo 'timeout 5' >> /boot/loader/loader.conf && echo 'title Core Linux' > /boot/loader/entries/arch.conf && echo 'linux /vmlinuz-linux' >> /boot/loader/entries/arch.conf && echo 'initrd /initramfs-linux.img' >> /boot/loader/entries/arch.conf && echo 'options root=/dev/'$partition_device'p2 rootflags=subvol=@ rw quiet loglevel=3 rd.system.show_status=auto rd.udev.log_level=3' >> /boot/loader/entries/arch.conf
+            bootctl --path=/boot install && echo 'default arch-*' >> /boot/loader/loader.conf && echo 'timeout 5' >> /boot/loader/loader.conf && echo 'title Core Linux' > /boot/loader/entries/arch.conf && echo 'linux /vmlinuz-'$kernel'' >> /boot/loader/entries/arch.conf && echo 'initrd /initramfs-'$kernel'.img' >> /boot/loader/entries/arch.conf && echo 'options root=/dev/'$partition_device'p2 rootflags=subvol=@ rw quiet loglevel=3 rd.system.show_status=auto rd.udev.log_level=3' >> /boot/loader/entries/arch.conf
         elif [ $partition_device = "nvme0n2" ]; then
             pacman -Sy efibootmgr --noconfirm
-            bootctl --path=/boot install && echo 'default arch-*' >> /boot/loader/loader.conf && echo 'timeout 5' >> /boot/loader/loader.conf && echo 'title Core Linux' > /boot/loader/entries/arch.conf && echo 'linux /vmlinuz-linux' >> /boot/loader/entries/arch.conf && echo 'initrd /initramfs-linux.img' >> /boot/loader/entries/arch.conf && echo 'options root=/dev/'$partition_device'p2 rootflags=subvol=@ rw quiet loglevel=3 rd.system.show_status=auto rd.udev.log_level=3' >> /boot/loader/entries/arch.conf
+            bootctl --path=/boot install && echo 'default arch-*' >> /boot/loader/loader.conf && echo 'timeout 5' >> /boot/loader/loader.conf && echo 'title Core Linux' > /boot/loader/entries/arch.conf && echo 'linux /vmlinuz-'$kernel'' >> /boot/loader/entries/arch.conf && echo 'initrd /initramfs-'$kernel'.img' >> /boot/loader/entries/arch.conf && echo 'options root=/dev/'$partition_device'p2 rootflags=subvol=@ rw quiet loglevel=3 rd.system.show_status=auto rd.udev.log_level=3' >> /boot/loader/entries/arch.conf
         elif [ $partition_device = "nvme0n3" ]; then
             pacman -Sy efibootmgr --noconfirm
-            bootctl --path=/boot install && echo 'default arch-*' >> /boot/loader/loader.conf && echo 'timeout 5' >> /boot/loader/loader.conf && echo 'title Core Linux' > /boot/loader/entries/arch.conf && echo 'linux /vmlinuz-linux' >> /boot/loader/entries/arch.conf && echo 'initrd /initramfs-linux.img' >> /boot/loader/entries/arch.conf && echo 'options root=/dev/'$partition_device'p2 rootflags=subvol=@ rw quiet loglevel=3 rd.system.show_status=auto rd.udev.log_level=3' >> /boot/loader/entries/arch.conf
+            bootctl --path=/boot install && echo 'default arch-*' >> /boot/loader/loader.conf && echo 'timeout 5' >> /boot/loader/loader.conf && echo 'title Core Linux' > /boot/loader/entries/arch.conf && echo 'linux /vmlinuz-'$kernel'' >> /boot/loader/entries/arch.conf && echo 'initrd /initramfs-'$kernel'.img' >> /boot/loader/entries/arch.conf && echo 'options root=/dev/'$partition_device'p2 rootflags=subvol=@ rw quiet loglevel=3 rd.system.show_status=auto rd.udev.log_level=3' >> /boot/loader/entries/arch.conf
         elif [ $partition_device = "nvme0n4" ]; then
             pacman -Sy efibootmgr --noconfirm
-            bootctl --path=/boot install && echo 'default arch-*' >> /boot/loader/loader.conf && echo 'timeout 5' >> /boot/loader/loader.conf && echo 'title Core Linux' > /boot/loader/entries/arch.conf && echo 'linux /vmlinuz-linux' >> /boot/loader/entries/arch.conf && echo 'initrd /initramfs-linux.img' >> /boot/loader/entries/arch.conf && echo 'options root=/dev/'$partition_device'p2 rootflags=subvol=@ rw quiet loglevel=3 rd.system.show_status=auto rd.udev.log_level=3' >> /boot/loader/entries/arch.conf
+            bootctl --path=/boot install && echo 'default arch-*' >> /boot/loader/loader.conf && echo 'timeout 5' >> /boot/loader/loader.conf && echo 'title Core Linux' > /boot/loader/entries/arch.conf && echo 'linux /vmlinuz-'$kernel'' >> /boot/loader/entries/arch.conf && echo 'initrd /initramfs-'$kernel'.img' >> /boot/loader/entries/arch.conf && echo 'options root=/dev/'$partition_device'p2 rootflags=subvol=@ rw quiet loglevel=3 rd.system.show_status=auto rd.udev.log_level=3' >> /boot/loader/entries/arch.conf
         else
             pacman -Sy efibootmgr --noconfirm
-            bootctl --path=/boot install && echo 'default arch-*' >> /boot/loader/loader.conf && echo 'timeout 5' >> /boot/loader/loader.conf && echo 'title Core Linux' > /boot/loader/entries/arch.conf && echo 'linux /vmlinuz-linux' >> /boot/loader/entries/arch.conf && echo 'initrd /initramfs-linux.img' >> /boot/loader/entries/arch.conf && echo 'options root=/dev/'$partition_device'2 rootflags=subvol=@ rw quiet loglevel=3 rd.system.show_status=auto rd.udev.log_level=3' >> /boot/loader/entries/arch.conf
+            bootctl --path=/boot install && echo 'default arch-*' >> /boot/loader/loader.conf && echo 'timeout 5' >> /boot/loader/loader.conf && echo 'title Core Linux' > /boot/loader/entries/arch.conf && echo 'linux /vmlinuz-'$kernel'' >> /boot/loader/entries/arch.conf && echo 'initrd /initramfs-'$kernel'.img' >> /boot/loader/entries/arch.conf && echo 'options root=/dev/'$partition_device'2 rootflags=subvol=@ rw quiet loglevel=3 rd.system.show_status=auto rd.udev.log_level=3' >> /boot/loader/entries/arch.conf
         fi   
     }
 
@@ -118,12 +138,13 @@ services="gdm NetworkManager firewalld bluetooth cronie reflector cups"
 
     }
 
-base2
 
-if [ "$partition_efi" = "true" ]; then 
-    systemd-boot
+base2 
+
+if [ "$partition_efi" = "true" ]; then  
+  systemd-boot
 else
-    grub-legacy
+   grub-legacy
 fi        
 
 packages

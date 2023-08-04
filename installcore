@@ -1,6 +1,8 @@
 #!/usr/bin/bash
+# installcore
+# author Jonathan Sanfilippo 
 
-version="1.3"
+version="1.7"
 
 main_color="#5e81ac"
 warning_color="#bf616a"
@@ -39,7 +41,7 @@ Welcome() {
    @@@@@@@@@@@@@@@%    @@@@@@@@@@@@@      @@@@         @@@@@@     #@@@      
      &@@@@@@@@@@         *@@@@@@@(        @@@@           @@@@@@@@@@@@&  
      
-     ')" "" "Welcome to InstallCore" "Ready to make your Core installation... ready?" "$(gum style --foreground "#5e81ac" "InstallCore version: $version")")" && CONTINUE=true
+     ')" "" "Welcome to InstallCore" "$(gum style --foreground "#b48ead" "InstallCore version: $version")" "$(gum style --foreground "#81a1c1" "Developed by Jonathan Sanfilippo, Klod Cripta.")" "$(gum style --foreground "#ebcb8b" "Warning, Internet connection required..")")" && CONTINUE=true
     if [[ $CONTINUE != "true" ]]; then
         echo "Exiting. Have a good day!"
         exit
@@ -61,9 +63,10 @@ Locale() {
 
 Username() {
     clear
-    gum style --border normal --margin "1" --padding "1 2" "Please enter your username and realname "
-    username=$(gum input --placeholder "Please enter your username [lowercase automatic convert]" | tr '[:upper:]' '[:lower:]')
-    realname=$(gum input --placeholder "Please enter your Realname" )
+    gum style --border normal --margin "1" --padding "1 2" "You can type your name and surname in uppercase or lowercase" "your name will be considered for the home." "$(gum style --foreground "#ebcb8b" "Please enter your realname")"
+    name=$(gum input --placeholder "Please enter your name")
+    username=$(echo "$name" | cut -d' ' -f1 | tr '[:upper:]' '[:lower:]')
+    realname="$name"
 }
 
 # Password Function
@@ -73,7 +76,7 @@ Password() {
     while [[ "$matches" == "false" ]]; do
         clear
         if [[ "$passwrong" == "true" ]]; then
-            gum style --border normal --margin "1" --padding "1 2" "Passwords did not match, please type the password again"
+            gum style --border normal --margin "1" --padding "1 2" "Passwords did not match, please type the password again" 
         else
             gum style --border normal --margin "1" --padding "1 2" "Now enter your password"
         fi
@@ -128,34 +131,67 @@ RootPassword() {
 
 Shell() {
     clear
-    gum style --border normal --margin "1" --padding "1 2" "Select a default shell"
-    shell=$(gum choose --limit 1 fish zsh bash)
+    gum style --border normal --margin "1" --padding "1 2" "The base shell in Core Linux is $(gum style --foreground "#a3be8c" bash)" "Other variants are available." "$(gum style --foreground "#ebcb8b" "Select a default shell.")"
+    shell=$(gum choose --limit 1 bash zsh fish)
 
   
 }
 
+AURhelper() {
+    clear
+    gum style --border normal --margin "1" --padding "1 2" "AUR is a community driven repository by Arch users." "The AUR Helper automates various tasks as searching for packages." "$(gum style --foreground "#ebcb8b" "Select a default AUR Helper.")"
+    helper=$(gum choose --limit 1 yay paru aura pikaur )
 
+  
+}
 
+Firewall() {
+    clear
+    gum style --border normal --margin "1" --padding "1 2" "Firewalls create a barrier between a trusted network" "and an untrusted network" "$(gum style --foreground "#ebcb8b" "Select a default Firewall.")"
+    fwll=$(gum choose --limit 1 "No firewall" firewalld ufw iptables )
+
+  
+}
+
+Kernel() {
+    clear
+    gum style --border normal --margin "1" --padding "1 2" "Core Linux is based on the Kernel: $(gum style --foreground "#a3be8c" linux)" "There are various alternative Linux kernels available." "$(gum style --foreground "#ebcb8b" "Select a default Kernel.")"
+    kernel=$(gum choose --limit 1 linux linux-lts linux-zen linux-hardened linux-rt linux-rt-lts)
+    
+}
 
 Hostname() {
    clear
-   gum style --border normal --margin "1" --padding "1 2" "Please enter a hostname"
-   default_hostname="core-$(printf '%s' $(echo "$RANDOM" | md5sum) | cut -c 1-10)"
-   read -p "Hostname ($default_hostname): " hostname
+   gum style --border normal --margin "1" --padding "1 2" "Generated hostname for core" "$(gum style --foreground "#ebcb8b" "Press enter to continue or type and change machine name")"
+   default_hostname="core-$(printf '%s' $(echo "$RANDOM" | md5sum) | cut -c 1-6)"
+   read -p "Hostname $(gum style --foreground "#b48ead" "$default_hostname"): " hostname
    hostname=${hostname:-$default_hostname}
 }
 
 Disk() {
     clear
-    gum style --border normal --margin "1" --padding "1 2" "Please select the disk to install to" "$(gum style --foreground "$warning_color" 'WARNING: This will erease the whole disk')"
+    gum style --border normal --margin "1" --padding "1 2" "Set the size of the root, the remaining space will be dedicated to home." "$(gum style --foreground "#ebcb8b" "Please select the disk to install to")" "$(gum style --foreground "$warning_color" 'WARNING: This will erease the whole disk!')"
     disk_dev=$(lsblk -pdo name | grep -v zram | grep -v NAME | grep -v loop | grep -v sr | gum choose --limit 1)
     disk=$(echo $disk_dev | awk '{ print substr ($0, 6 ) }')
     default_root=$(lsblk -b -n -o SIZE /dev/$disk | awk 'NR==1{size=int($1/1048576); printf "%d", size}')
-    read -p "total disk: $default_root MB. enter root size: " root
+    read -p "$(gum style --foreground "#81a1c1" " $disk size: $default_root MB.") Enter root size [MB]: " root
     root=${root:-}
+    home=$(expr $default_root - $root)
+    root1=$(echo "scale=2; $root/1024" | bc)
+    home1=$(echo "scale=2; $home/1024" | bc)
+    root2=${root1%.*} # rimuove la parte decimale
+    home2=${home1%.*} # rimuove la parte decimale
+    GB="GB" 
+}
+
+
+Swap(){
+    clear
+    gum style --border normal --margin "1" --padding "1 2" "Swap is a specific area of memory used by an operating system" "to store temporary data that cannot be held in main memory (RAM)." "$(gum style --foreground "#ebcb8b" "Please set zram size for swap.")"
     ram=$(free -m | awk '/^Mem:/{print int($2/1024 + 0.5) }')
-    read -p "Set Zram size: your ram is $ram GB. " zram
+    read -p "$(gum style --foreground "#b48ead" " RAM size: $ram GB") Set zram size [GB]: " zram
     zram=${zram:-$ram}
+
 }
 
 
@@ -164,9 +200,13 @@ UEFICheck() {
     if [[ $is_uefi == "true" ]]; then
         grub_type="grub-efi"
         grub_location="/boot/efi"
+        efiboot="1"
+        mode="UEFI"
     else
         grub_type="grub-legacy"
         grub_location="$disk_dev"
+        efiboot="none"
+        mode="Bios/mbr"
     fi
 }
 
@@ -177,11 +217,15 @@ Reflector() {
 
 
 
+# $(gum style --foreground "#d8dee9" "") testo bianco
+# $(gum style --foreground "#a3be8c" "") testo colorato verde
+# 
+#
 
 Summary() {
     clear
     CONTINUE=false
-    gum confirm "$(gum style --border normal --margin '1' --padding '1 2' "Summary, is this correct?" "" "keymap: $keymap" "timezone: $timezone" "locale: $locale" "Username: $username" "Realname: $realname " "password: $password" "Default shell: $shell" "root-password: $root_password" "hostname: $hostname" "disk: $disk" "efi: $is_uefi" "reflector: $country" "root: $root MB" "zram: $zram GB")" && CONTINUE=true
+    gum confirm "$(gum style --border normal --margin '1' --padding '1 2' "Summary, is this correct?" "" "$(gum style --foreground "#ebcb8b" "keymap: ")$(gum style --foreground "#d8dee9" "$keymap ")$(gum style --foreground "#ebcb8b" "timezone: ")$(gum style --foreground "#d8dee9" "$timezone ")$(gum style --foreground "#ebcb8b" "locale: ")$(gum style --foreground "#d8dee9" "$locale")" "$(gum style --foreground "#a3be8c" "Username: ")$(gum style --foreground "#d8dee9" "$username ")$(gum style --foreground "#a3be8c" "Realname: ")$(gum style --foreground "#d8dee9" "$realname ")" "$(gum style --foreground "#d08770" "User Password: ")$(gum style --foreground "#d8dee9" "$password ")$(gum style --foreground "#d08770" "Root Password: ")$(gum style --foreground "#d8dee9" "$root_password")" "$(gum style --foreground "#b48ead" "hostname: ")$(gum style --foreground "#d8dee9" "$hostname ")$(gum style --foreground "#b48ead" "Kernel: ")$(gum style --foreground "#d8dee9" "$kernel ")" "$(gum style --foreground "#8fbcbb" "Mode: ")$(gum style --foreground "#d8dee9" "$mode ")$(gum style --foreground "#8fbcbb" "Device: ")$(gum style --foreground "#d8dee9" "/dev/$disk ")$(gum style --foreground "#8fbcbb" "FS: ")$(gum style --foreground "#d8dee9" "BTRFS ")"  "$(gum style --foreground "#8fbcbb" "boot: ")$(gum style --foreground "#d8dee9" "$efiboot$GB ")$(gum style --foreground "#8fbcbb" "root: ")$(gum style --foreground "#d8dee9" "$root2$GB ")$(gum style --foreground "#8fbcbb" "home: ")$(gum style --foreground "#d8dee9" "$home2$GB ")$(gum style --foreground "#8fbcbb" "zram: ")$(gum style --foreground "#d8dee9" "$zram$GB")" "$(gum style --foreground "#81a1c1" "firewall: ")$(gum style --foreground "#d8dee9" "$fwll ")$(gum style --foreground "#81a1c1" "shell: ")$(gum style --foreground "#d8dee9" "$shell ")$(gum style --foreground "#81a1c1" "AUR: ")$(gum style --foreground "#d8dee9" "$helper ")" "$(gum style --foreground "#5e81ac" "mirrorlist: ")$(gum style --foreground "#d8dee9" "$country ")$(gum style --foreground "#5e81ac" "DE: ")$(gum style --foreground "#d8dee9" "Gnome minimal")")" && CONTINUE=true
     if [[ $CONTINUE != "true" ]]; then
         Change
     else
@@ -221,18 +265,21 @@ Summary() {
                 \"userpass\": \"$crypt_password\",
                 \"key\": \"$key\",
                 \"hasroot\": true,
-                \"shell\": \"$shell\"
+                \"shell\": \"$shell\",
+                \"helper\": \"$helper\",
+                \"fwll\": \"$fwll\",
+                \"kernel\": \"$kernel\"
             }
         ],
         \"rootpass\": \"$crypt_root_password\",
-        \"kernel\": \"linux\"
+        \"x\": \"x\"
     }" > /tmp/config.json
     fi
 }
 
 Change() {
     gum style --border normal --margin '1' --padding '1 2' "What do you want to change?"
-    $(gum choose --limit 1 Timezone Keymap Locale Username Password RootPassword Shell Hostname Disk Reflector )
+    $(gum choose --limit 1 Timezone Keymap Locale Username Password RootPassword Shell AURhelper Firewall Kernel Hostname Disk Reflector )
     Summary
 }
 
@@ -259,8 +306,12 @@ Password
 RootPassword
 Shell
 Hostname
-Disk 
+Disk
+Swap 
 Reflector
 UEFICheck
+AURhelper
+Firewall
+Kernel
 Summary
 Install
