@@ -1,7 +1,0 @@
-[Desktop Entry]
-Version=1.0
-Name=start
-Exec=core-start
-Type=Application
-Terminal=false
-Categories=Utility
