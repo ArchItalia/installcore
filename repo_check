@@ -1,0 +1,63 @@
+#!/bin/bash
+#
+# Author : Jonathan Sanfilippo 		
+# Date: 22 Jul 2023
+# Version 1.0.0: 
+#
+
+package="installcore"
+link="https://aur.archlinux.org/cgit/aur.git/plain/PKGBUILD?h=$package"
+url="/home/jonathan/Development/ai-repo"
+repository="$url/repository"
+data=$(date +'%d-%m-%Y %H:%M:%S')
+passphrase=$(cat $url/passphrase)
+arch="$url/x86_64"
+PKGBUILDS="$url/PKGBUILDS"
+status="$url/status"
+readme="$url/README.md"
+log="$url/ai-brain-log"
+
+
+
+
+#remote_pkgver=$(curl -s "$link" | grep '^pkgver=' | cut -d= -f2)
+local_pkgver=$(grep '^pkgver=' $repository/$package/PKGBUILD | cut -d= -f2)
+remote_pkgver="$local_pkgver"
+
+
+if [ "$remote_pkgver" = "$local_pkgver" ]; then
+    echo "- $data **$package** $local_pkgver version already updated" >> $readme
+else
+    echo "- $data **$package** $local_pkgver > $remote_pkgver just updated 🔹" >> $readme
+    echo "$data $package $local_pkgver > $remote_pkgver just updated" >> $log
+    echo "true" > $status
+    
+    # scarica nuovo PKGBUILD
+    wget -P $repository/$package/ "$link"
+    
+    # rinomina PKGBUILD
+    mv $repository/$package/PKGBUILD?h=$package  $repository/$package/PKGBUILD
+    
+
+    # change directory
+    cd $repository/$package/ || return
+
+    # compila nuovo pacchetto
+    makepkg -s --noconfirm --needed
+
+    # Firma pacchetto
+    if gpg --list-keys &>/dev/null; then
+     echo "$passphrase" | gpg --batch --no-tty --pinentry-mode loopback --passphrase-fd 0 --sign --detach-sign *.pkg.tar.zst
+     
+     rm -rf $arch/$package-$local_pkgver-*
+
+     mv {*.pkg.tar.zst,*.pkg.tar.zst.sig} $arch/
+
+     mkdir -p $PKGBUILDS/$package
+     cp -rp PKGBUILD $PKGBUILDS/$package/
+
+
+
+    cd $url || return
+    fi
+fi

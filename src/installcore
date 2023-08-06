@@ -1,0 +1,396 @@
+#!/usr/bin/bash
+# installcore
+# author Jonathan Sanfilippo 
+
+version="1.8"
+url="/usr/bin/inc-files"
+# test url
+#url="/home/jonathan/Development/ai-repo/repository/installcore/src/inc-files"
+
+
+main_color="#5e81ac"
+warning_color="#bf616a"
+
+export BORDER_FOREGROUND="#81a1c1"
+export GUM_CONFIRM_SELECTED_BACKGROUND="$main_color"
+export GUM_CHOOSE_CURSOR_FOREGROUND="#81a1c1"
+export GUM_CHOOSE_SELECTED_FOREGROUND="$main_color"
+export GUM_INPUT_CURSOR_FOREGROUND="$main_color"
+export GUM_FILTER_INDICATOR_FOREGROUND="$main_color"
+export FOREGROUND="#d8dee9"
+export BACKGROUND="#2e3440"
+export DISABLED_FOREGROUND="#4c566a"
+export SELECTED_BACKGROUND="#434c5e"
+export HEADER_FOREGROUND="#eceff4"
+export SUCCESS_COLOR="#a3be8c"
+export INFO_COLOR="#88c0d0"
+export WARNING_COLOR="$warning_color"
+export LINK_COLOR="#8fbcbb"
+export CODE_COLOR="#ebcb8b"
+export QUOTE_COLOR="#b48ead"
+
+
+
+
+Language() {
+    clear
+    gum style --border normal --margin "1" --padding "1 2" "$(gum style --foreground "#d8dee9" '  
+            
+                   /@@@@@/             @@@@@,         @@@,   @@@@@     (@@@@@@/                 
+               @@@@@@@@@@@@@*      @@@@@@@@@@@       @@@@@@@@@@@,  @@@@@@@@@@@@@#              
+             @@@@@@     @@@      @@@@@@,  @@@@@@     @@@@@@      &@@@@       %@@@@             
+            @@@@@             &@@@@@@       @@@@@@   @@@@        @@@@@@@@@@@@@@@@@             
+            @@@@@           @@@@@@(          @@@@@@  @@@@        @@@@&&&&&&&&&&&&#             
+            &@@@@@       %@@@@@@  @@@@     @@@@@@,   @@@@        @@@@@                         
+              @@@@@@@@@@@@@@@%    @@@@@@@@@@@@@      @@@@         @@@@@@     #@@@              
+                &@@@@@@@@@@         *@@@@@@@(        @@@@           @@@@@@@@@@@@&           
+             
+     ')" ""
+    lingua=$(gum choose --limit 1 Italiano English Spanish French)
+    ilocale="$url/locale/$lingua"
+
+}
+
+
+
+
+
+Welcome() {
+    Twelc1=$(cat $ilocale/Twelc1)
+    Twelc2=$(cat $ilocale/Twelc2)
+    Twelc3=$(cat $ilocale/Twelc3)
+    Twelc4=$(cat $ilocale/Twelc4)
+    Twelc5=$(cat $ilocale/Twelc5)
+    Tmenu1=$(cat $ilocale/Tmenu1)
+    Tmenu2=$(cat $ilocale/Tmenu2)
+    Tmenu3=$(cat $ilocale/Tmenu3)
+
+    ping -c 1 8.8.8.8 > /dev/null 2>&1
+    gum style --border normal --margin "1" --padding "1 2" "$Tmenu2"
+    sleep 3
+    
+    if ping -c 1 8.8.8.8 > /dev/null 2>&1; then
+        InternetStatus="$Twelc5"
+        Twelcolor="#a3be8c"
+    else 
+        InternetStatus="$Twelc4"
+        Twelcolor="#d08770"    
+    fi
+
+    clear
+    gum style --border normal --margin "1" --padding "1 2" "$Twelc1" "" "$(gum style --foreground "#b48ead" "InstallCore v.$version")" "$(gum style --foreground "#81a1c1" "$Twelc2 Jonathan Sanfilippo, Klod Cripta.")" "$(gum style --foreground "#707587" "https://Architalia.github.io/core")" "$(gum style --foreground "$Twelcolor" "$InternetStatus")"
+    menu=$(gum choose --limit 1 "$Tmenu1" "$Tmenu3" )
+     
+}
+
+Menu(){
+    menux="$menu"
+    if [[  $menux != "$Tmenu1" ]]; then
+     echo "$Twelc3"
+     exit
+    fi 
+}
+
+
+
+Timezone() {
+    TTimezone=$(cat $ilocale/TTimezone)
+    timezone=$(timedatectl list-timezones | gum filter --placeholder "$TTimezone")
+    
+}
+
+Keymap() {
+    Tkeymap=$(cat $ilocale/Tkeymap)
+    keymap=$(localectl list-keymaps | gum filter --placeholder "$Tkeymap")
+}
+
+Locale() {
+    Tlocale=$(cat $ilocale/Tlocale)
+    locale=$(cat $url/locales | gum filter --placeholder "$Tlocale")
+}
+
+Username() {
+    clear
+    Tusername1=$(cat $ilocale/Tusername1)
+    Tusername2=$(cat $ilocale/Tusername2)
+    Tusername3=$(cat $ilocale/Tusername3)
+    Tusername4=$(cat $ilocale/Tusername4)
+    gum style --border normal --margin "1" --padding "1 2" "$Tusername1" "$Tusername2" "$(gum style --foreground "#ebcb8b" "$Tusername3")"
+    name=$(gum input --placeholder "$Tusername4")
+    username=$(echo "$name" | cut -d' ' -f1 | tr '[:upper:]' '[:lower:]')
+    realname="$name"
+}
+
+# Password Function
+Password() {
+    Tpassword1=$(cat $ilocale/Tpassword1)
+    Tpassword2=$(cat $ilocale/Tpassword2)
+    Tpassword3=$(cat $ilocale/Tpassword3)
+    Tpassword4=$(cat $ilocale/Tpassword4)
+    Tpassword5=$(cat $ilocale/Tpassword5)
+    matches="false"
+    passwrong="false"
+    while [[ "$matches" == "false" ]]; do
+        clear
+        if [[ "$passwrong" == "true" ]]; then
+            gum style --border normal --margin "1" --padding "1 2" "$Tpassword5" 
+        else
+            gum style --border normal --margin "1" --padding "1 2" "$Tpassword1"
+        fi
+        password=$(gum input --password --placeholder "$Tpassword2")
+        clear
+        gum style --border normal --margin "1" --padding "1 2" "$Tpassword3"
+        password_verif=$(gum input --password --placeholder "$Tpassword4")
+        if [[ "$password" == "$password_verif" ]]; then
+            matches="true"
+        else
+            passwrong="true"
+        fi
+    done
+    length=10
+    key=$(openssl rand -base64 $((length * 2)) | tr -dc 'a-zA-Z0-9' | fold -w $length | head -n 1)
+    crypt_password=$(echo "$password" | openssl enc -e -aes256 -base64 -k "$key")
+}
+
+# RootPassword Function
+RootPassword() {
+    Tpasswordr=$(cat $ilocale/Tpasswordr)
+    Tpassword1=$(cat $ilocale/Tpassword1)
+    Tpassword2=$(cat $ilocale/Tpassword2)
+    Tpassword3=$(cat $ilocale/Tpassword3)
+    Tpassword4=$(cat $ilocale/Tpassword4)
+    Tpassword5=$(cat $ilocale/Tpassword5)
+    clear
+    different_root_password=true
+    gum confirm "$(gum style --border normal --margin '1' --padding '1 2' "$Tpasswordr")" && different_root_password=false
+    if [[ $different_root_password != "true" ]]; then
+        root_password=$password # set root password same as user password
+    else
+        root_matches="false"
+        root_passwrong="false"
+        while [[ "$root_matches" == "false" ]]; do
+            clear
+            if [[ "$root_passwrong" == "true" ]]; then
+                gum style --border normal --margin "1" --padding "1 2" "$Tpassword5"
+            else
+                gum style --border normal --margin "1" --padding "1 2" "$Tpassword1"
+            fi
+            root_password=$(gum input --password --placeholder "$Tpassword2")
+            clear
+            gum style --border normal --margin "1" --padding "1 2" "$Tpassword3"
+            root_password_verif=$(gum input --password --placeholder "$Tpassword4")
+            if [[ "$root_password" == "$root_password_verif" ]]; then
+                root_matches="true"
+            else
+                root_passwrong="true"
+            fi
+        done
+    fi
+    crypt_root_password=$(echo $root_password | openssl enc -e -aes256 -base64 -k "$key")
+}
+
+
+Shell() {
+    Tshell1=$(cat $ilocale/Tshell1)
+    Tshell2=$(cat $ilocale/Tshell2)
+    Tshell3=$(cat $ilocale/Tshell3)
+    clear
+    gum style --border normal --margin "1" --padding "1 2" "$Tshell1 $(gum style --foreground "#a3be8c" bash)" "$Tshell2" "$(gum style --foreground "#ebcb8b" "$Tshell3")"
+    shell=$(gum choose --limit 1 bash zsh fish)
+
+  
+}
+
+AURhelper() {
+    Taur1=$(cat $ilocale/Taur1)
+    Taur2=$(cat $ilocale/Taur2)
+    Taur3=$(cat $ilocale/Taur3)
+    clear
+    gum style --border normal --margin "1" --padding "1 2" "$Taur1" "$Taur2" "$(gum style --foreground "#ebcb8b" "$Taur3")"
+    helper=$(gum choose --limit 1 yay paru aura pikaur )
+
+  
+}
+
+Firewall() {
+    Tfw1=$(cat $ilocale/Tfw1)
+    Tfw2=$(cat $ilocale/Tfw2)
+    clear
+    gum style --border normal --margin "1" --padding "1 2" "$Tfw1" "$(gum style --foreground "#ebcb8b" "$Tfw2")"
+    fwll=$(gum choose --limit 1 "No firewall" firewalld ufw iptables )
+
+  
+}
+
+Kernel() {
+    Tkernel1=$(cat $ilocale/Tkernel1)
+    Tkernel2=$(cat $ilocale/Tkernel2)
+    Tkernel3=$(cat $ilocale/Tkernel3)
+    clear
+    gum style --border normal --margin "1" --padding "1 2" "$Tkernel1 $(gum style --foreground "#a3be8c" linux)" "$Tkernel2" "$(gum style --foreground "#ebcb8b" "$Tkernel3")"
+    kernel=$(gum choose --limit 1 linux linux-lts linux-zen linux-hardened linux-rt linux-rt-lts)
+    
+}
+
+Hostname() {
+   Thost1=$(cat $ilocale/Thost1)
+   Thost2=$(cat $ilocale/Thost2)
+   clear
+   gum style --border normal --margin "1" --padding "1 2" "$Thost1" "$(gum style --foreground "#ebcb8b" "$Thost2")"
+   default_hostname="core-$(printf '%s' $(echo "$RANDOM" | md5sum) | cut -c 1-6)"
+   read -p "Hostname $(gum style --foreground "#b48ead" "$default_hostname"): " hostname
+   hostname=${hostname:-$default_hostname}
+}
+
+Disk() {
+    Tdisk1=$(cat $ilocale/Tdisk1)
+    Tdisk2=$(cat $ilocale/Tdisk2)
+    Tdisk3=$(cat $ilocale/Tdisk3)
+    Tdisk4=$(cat $ilocale/Tdisk4)
+    clear
+    gum style --border normal --margin "1" --padding "1 2" "$Tdisk1" "$(gum style --foreground "#ebcb8b" "$Tdisk2")" "$(gum style --foreground "$warning_color" "$Tdisk3")"
+    disk_dev=$(lsblk -pdo name | grep -v zram | grep -v NAME | grep -v loop | grep -v sr | gum choose --limit 1)
+    disk=$(echo $disk_dev | awk '{ print substr ($0, 6 ) }')
+    default_root=$(lsblk -b -n -o SIZE /dev/$disk | awk 'NR==1{size=int($1/1048576); printf "%d", size}')
+    read -p "$(gum style --foreground "#81a1c1" " $disk size: $default_root MB.") $Tdisk4 [MB]: " root
+    root=${root:-}
+    home=$(expr $default_root - $root)
+    root1=$(echo "scale=2; $root/1024" | bc)
+    home1=$(echo "scale=2; $home/1024" | bc)
+    root2=${root1%.*} # rimuove la parte decimale
+    home2=${home1%.*} # rimuove la parte decimale
+    GB="GB" 
+}
+
+
+Swap(){
+    Tzram1=$(cat $ilocale/Tzram1)
+    Tzram2=$(cat $ilocale/Tzram2)
+    Tzram3=$(cat $ilocale/Tzram3)
+    Tzram4=$(cat $ilocale/Tzram4)
+    clear
+    gum style --border normal --margin "1" --padding "1 2" "$Tzram1" "$Tzram2" "$(gum style --foreground "#ebcb8b" "$Tzram3")"
+    ram=$(free -m | awk '/^Mem:/{print int($2/1024 + 0.5) }')
+    read -p "$(gum style --foreground "#b48ead" " RAM size: $ram GB") $Tzram4 [GB]: " zram
+    zram=${zram:-$ram}
+
+}
+
+
+UEFICheck() {
+    is_uefi=$([ -d /sys/firmware/efi ] && echo true || echo false)
+    if [[ $is_uefi == "true" ]]; then
+        grub_type="grub-efi"
+        grub_location="/boot/efi"
+        efiboot="1"
+        mode="UEFI"
+    else
+        grub_type="grub-legacy"
+        grub_location="$disk_dev"
+        efiboot="none"
+        mode="Bios/mbr"
+    fi
+}
+
+Reflector() {
+    Tmirror=$(cat $ilocale/Tmirror)
+    country=$(cat $url/country | gum filter --placeholder "$Tmirror")
+}
+
+
+
+Summary() {
+    Tsum=$(cat $ilocale/Tsum)
+    Tconfirm1=$(cat $ilocale/Tconfirm1)
+    Tconfirm2=$(cat $ilocale/Tconfirm2)
+    clear
+    CONTINUE=false
+    gum style --border normal --margin '1' --padding '1 2' "$Tsum" "" "$(gum style --foreground "#ebcb8b" "keymap: ")$(gum style --foreground "#d8dee9" "$keymap ")$(gum style --foreground "#ebcb8b" "timezone: ")$(gum style --foreground "#d8dee9" "$timezone ")$(gum style --foreground "#ebcb8b" "locale: ")$(gum style --foreground "#d8dee9" "$locale")" "$(gum style --foreground "#a3be8c" "Username: ")$(gum style --foreground "#d8dee9" "$username ")$(gum style --foreground "#a3be8c" "Realname: ")$(gum style --foreground "#d8dee9" "$realname ")" "$(gum style --foreground "#d08770" "User Password: ")$(gum style --foreground "#d8dee9" "$password ")$(gum style --foreground "#d08770" "Root Password: ")$(gum style --foreground "#d8dee9" "$root_password")" "$(gum style --foreground "#b48ead" "hostname: ")$(gum style --foreground "#d8dee9" "$hostname ")$(gum style --foreground "#b48ead" "Kernel: ")$(gum style --foreground "#d8dee9" "$kernel ")" "$(gum style --foreground "#8fbcbb" "Mode: ")$(gum style --foreground "#d8dee9" "$mode ")$(gum style --foreground "#8fbcbb" "Device: ")$(gum style --foreground "#d8dee9" "/dev/$disk ")$(gum style --foreground "#8fbcbb" "FS: ")$(gum style --foreground "#d8dee9" "BTRFS ")"  "$(gum style --foreground "#8fbcbb" "boot: ")$(gum style --foreground "#d8dee9" "$efiboot$GB ")$(gum style --foreground "#8fbcbb" "root: ")$(gum style --foreground "#d8dee9" "$root2$GB ")$(gum style --foreground "#8fbcbb" "home: ")$(gum style --foreground "#d8dee9" "$home2$GB ")$(gum style --foreground "#8fbcbb" "zram: ")$(gum style --foreground "#d8dee9" "$zram$GB")" "$(gum style --foreground "#81a1c1" "firewall: ")$(gum style --foreground "#d8dee9" "$fwll ")$(gum style --foreground "#81a1c1" "shell: ")$(gum style --foreground "#d8dee9" "$shell ")$(gum style --foreground "#81a1c1" "AUR: ")$(gum style --foreground "#d8dee9" "$helper ")" "$(gum style --foreground "#5e81ac" "mirrorlist: ")$(gum style --foreground "#d8dee9" "$country ")$(gum style --foreground "#5e81ac" "Desktop Environment: ")$(gum style --foreground "#d8dee9" "Gnome minimal")" "" "$(gum style --foreground "$warning_color" "$Tdisk3")" && CONTINUE=true
+    menu=$(gum choose --limit 1 "$Tconfirm1" "$Tconfirm2" )
+    if [[ $menu != "$Tconfirm1" ]]; then
+        clear
+        Change
+    else
+        # Remove config.json if it exists
+        if [[ $(ls | grep "/tmp/config.json") ]]; then
+            rm /tmp/config.json
+        fi
+        # Make config.json
+        echo "{
+        \"partition\": {
+            \"device\": \"$disk\",
+            \"root\": \"$root\",
+            \"zram\": \"$zram\",
+            \"mode\": \"Auto\",
+            \"efi\": $is_uefi,
+            \"partitions\": []
+        },
+        \"bootloader\": {
+            \"type\": \"$grub_type\",
+            \"location\": \"$grub_location\"
+        },
+        \"locale\": {
+            \"locale\": [
+                \"$locale\"
+            ],
+            \"keymap\": \"$keymap\",
+            \"timezone\": \"$timezone\",
+            \"reflector\": \"$country\"
+        },
+        \"networking\": {
+            \"hostname\": \"$hostname\"
+        },
+        \"users\": [
+            {
+                \"name\": \"$username\",
+                \"rname\": \"$realname\",
+                \"userpass\": \"$crypt_password\",
+                \"key\": \"$key\",
+                \"hasroot\": true,
+                \"shell\": \"$shell\",
+                \"helper\": \"$helper\",
+                \"fwll\": \"$fwll\",
+                \"kernel\": \"$kernel\"
+            }
+        ],
+        \"rootpass\": \"$crypt_root_password\",
+        \"x\": \"x\"
+    }" > /tmp/config.json
+    fi
+}
+
+Change() {
+    Tchange=$(cat $ilocale/Tchange)
+    clear
+    gum style --border normal --margin '1' --padding '1 2' "$Tchange"
+    $(gum choose --limit 1 Timezone Keymap Locale Username Password RootPassword Shell AURhelper Firewall Kernel Hostname Disk Reflector )
+    Summary
+}
+
+Install() {
+  clear
+  sudo inc1
+}
+
+
+
+Language
+Welcome
+Menu
+Timezone
+Keymap
+Locale
+Username
+Password
+RootPassword
+Shell
+Hostname
+Disk
+Swap 
+Reflector
+UEFICheck
+AURhelper
+Firewall
+Kernel
+Summary
+Install

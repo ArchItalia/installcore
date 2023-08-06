@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=InstallCore
+GenericName=InstallCore
+Exec=gnome-terminal --geometry=106x30 -- /bin/sh -c "installcore ; echo Done - Press enter to exit; read _" 
+Comment=Core — System Installer
+Icon=/usr/bin/inc-files/icon.png
+Terminal=false
+StartupNotify=true
+X-AppStream-Ignore=true
+
+

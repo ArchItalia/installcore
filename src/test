@@ -1,0 +1,15 @@
+#!/bin/bash
+
+
+root="64000"
+home="393000"
+
+root1=$(echo "scale=2; $root/1024" | bc)
+home1=$(echo "scale=2; $home/1024" | bc)
+root2=${root1%.*} # rimuove la parte decimale
+home2=${home1%.*} # rimuove la parte decimale
+
+echo "$root2"
+echo "$home2"
+
+sleep 60

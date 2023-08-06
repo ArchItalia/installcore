@@ -1,0 +1,38 @@
+{
+        "partition": {
+            "device": "sda",
+            "root": "20000",
+            "zram": "8",
+            "mode": "Auto",
+            "efi": true,
+            "partitions": []
+        },
+        "bootloader": {
+            "type": "grub-efi",
+            "location": "/boot/efi"
+        },
+        "locale": {
+            "locale": [
+                "it_IT.UTF-8 UTF-8  "
+            ],
+            "keymap": "it",
+            "timezone": "Europe/London",
+            "reflector": "US"
+        },
+        "networking": {
+            "hostname": "core-1db8570267"
+        },
+        "users": [
+            {
+                "name": "jona",
+                "rname": "jona",
+                "userpass": "U2FsdGVkX18oPQrIF2/NlxIh8+uOL+vge5F5u5deH3M=",
+                "key": "Bh0taNDRxJWHBFabvkbFSlCfWRGGRdsx6Qs6Bqo24L2pQafatb8HKzLvvAm1Dh0Evve0a6rAJMYdn0L9oGx0NHfmtNlMYefzfZxY7BQsmbDZkFk4tAjjiA0NDkIQFiqQZgaFtjL5FZa0WMu8sBsMQCOpKNz01meJ57YNsqO4yfqhHYaisPznceuqdGJJH2T248FhL7qrAe237gUbLzMLDHPHA0CLZ2CFTucu3Qv96vDF7zjk3oZHrj9zCTpfvyq7KhzSF3Zd3vdtSwBSzwjTzsdBzNgddDT5aAlAQ5LQFXi4A5whSnqvnBpCHroPXGAtTRdB1BZXwK4n9DyKfPvGyGHA8swEutFA37NJjdwQUf0Sck5vCJt77x7cMR6goKG6otkBGaIjKxBP4zFzLBsFqVlnv0UFp7zqRXWEPk8PIPTzImxSn4wezFagd5keZf8nkCLdlaqXgqxUWb1Illki2PSHOxtfL2cGo1cX4eSaVe0KaMicqQJyNTMifIWJrIfF6RlQyS9xojASKG4uAHn16NdW911b2RjWEBkIzEthS5gSO57KwG1kQ3rn9dn7FDb5pPgotI9a8Dz9Zyllu4vMdPrA2AfV6k0bmrd1dq773xkfIHSzkmdhdIAcIdHYUcf5fkGOYsJpR6ftUPbswdThhivC7Oqwmt1Oj4nzI7lx6XFI4qxjWfillqkMv0TZ7xRAxMVpUqGyo6PTxrx3kv6CMZPIY7OIN2uyMp5YlxwRQBJcxtZnNoJpFpbnUCnXbUYLRwm1JKk0mHrDAVxPlw0MJaMtgFRknxQj2D8cYYIOOnfsiHAkzcdjAmHHwzGePGlgd9zs313mFesJhWMmgwdHj5skZ9D6UvzYWjx4YVf00dZ74BiqDbNUS1XbFekarBj2MQoYNQM5ub8uNFFKbl6D7TSLrg4qqs1YpCKoLDUDOpoZX8tEmGdSB2GIbME8vhdAYLanv5GkAoZ3TDUU87bII7R87PuNgoafSBi64n9L",
+                "hasroot": true,
+                "shell": "zsh",
+                "helper": "paru"
+            }
+        ],
+        "rootpass": "U2FsdGVkX1/MjAxrYBXlyKPFQ7a4swIy05yaYZ7PL8c=",
+        "kernel": "linux"
+    }
