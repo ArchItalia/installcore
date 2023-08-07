@@ -111,9 +111,6 @@ full="etcher-bin gnome-font-viewer libreoffice vlc blender inkscape gimp gnome-w
         cp -rp /home/inc-files/color-folders.png /usr/share/color-folders/
         
 
-        
-        # copia pacman.conf con richiesta firme
-        #cp -rp /home/inc-files/pacman.conf /etc/
 
     }
 
