@@ -1,7 +1,7 @@
 # Maintainer: Jonathan Sanfilippo  <jonalinux dot uk at gmail dot com>
 
 pkgname=installcore
-pkgver=1.8
+pkgver=2.0
 pkgrel=1
 pkgdesc="installcore script"
 arch=('any')

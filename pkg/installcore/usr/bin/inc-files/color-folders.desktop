@@ -1,0 +1,7 @@
+[Desktop Entry]
+Version=2.2
+Name=Color Folders
+Exec=gnome-terminal -- /bin/sh -c "color-folders; echo Done - Press enter to exit; read _"
+Icon=/usr/bin/inc-files/color-folders.png
+Type=Application
+Categories=Utility

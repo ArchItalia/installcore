@@ -1,0 +1,144 @@
+#!/bin/bash
+# color-folders
+# author Jonathan Sanfilippo 
+
+version="1.0"
+url=""
+
+
+main_color="#5e81ac"
+warning_color="#bf616a"
+
+export BORDER_FOREGROUND="#81a1c1"
+export GUM_CONFIRM_SELECTED_BACKGROUND="$main_color"
+export GUM_CHOOSE_CURSOR_FOREGROUND="#81a1c1"
+export GUM_CHOOSE_SELECTED_FOREGROUND="$main_color"
+export GUM_INPUT_CURSOR_FOREGROUND="$main_color"
+export GUM_FILTER_INDICATOR_FOREGROUND="$main_color"
+export FOREGROUND="#d8dee9"
+export BACKGROUND="#2e3440"
+export DISABLED_FOREGROUND="#4c566a"
+export SELECTED_BACKGROUND="#434c5e"
+export HEADER_FOREGROUND="#eceff4"
+export SUCCESS_COLOR="#a3be8c"
+export INFO_COLOR="#88c0d0"
+export WARNING_COLOR="$warning_color"
+export LINK_COLOR="#8fbcbb"
+export CODE_COLOR="#ebcb8b"
+export QUOTE_COLOR="#b48ead"
+
+
+# "$(gum style --background "#" --foreground "#" "")"
+
+
+color-folders(){
+     gum style --border normal --margin "1" --padding "1 2" "Color-Folders v.$version" "Change the color of the papirus-folders.." "$(gum style --foreground "#ebcb8b" "After choose: to change the icons on the desktop,")" "$(gum style --foreground "#ebcb8b" "right-click with the mouse on the desktop.")"
+     color=$(gum choose --limit 1 "$(gum style --background "#93c0ea" --foreground "#3a87e5" "adwaita")" "$(gum style --background "#4f4f4f" --foreground "#c2c2c2" "black")" "$(gum style --background "#5294e2" --foreground "#1d344f" "blue")" "$(gum style --background "#607d8b" --foreground "#222c31" "bluegrey")" "$(gum style --background "#57b8ec" --foreground "#106796" "breeze")" "$(gum style --background "#ae8e6c" --foreground "#3d3226" "brown")" "$(gum style --background "#a30002" --foreground "#390001" "carmine")" "$(gum style --background "#00bcd4" --foreground "#00424a" "cyan")" "$(gum style --background "#45abb7" --foreground "#eaeaea" "darkcyan")" "$(gum style --background "#eb6637" --foreground "#522413" "deeporange")" "$(gum style --background "#87b158" --foreground "#2f3e1f" "green")" "$(gum style --background "#8e8e8e" --foreground "#323232" "grey")" "$(gum style --background "#5c6bc0" --foreground "#202543" "indigo")" "$(gum style --background "#ca71df" --foreground "#47274e" "magenta")" "$(gum style --background "#82abaa" --foreground "#4e6766" "nordic")" "$(gum style --background "#ee923a" --foreground "#533314" "orange")" "$(gum style --background "#d1bfae" --foreground "#a38d7b" "palebrown")" "$(gum style --background "#eeca8f" --foreground "#917359" "paleorange")" "$(gum style --background "#f06292" --foreground "#542233" "pink")" "$(gum style --background "#e25252" --foreground "#4f1d1d" "red")" "$(gum style --background "#16a085" --foreground "#08382e" "teal")" "$(gum style --background "#7e57c2" --foreground "#2c1e44" "violet")" "$(gum style --background "#e4e4e4" --foreground "#4f4f4f" "white")" "$(gum style --background "#676767" --foreground "#ff7446" "yaru")" "$(gum style --background "#f9bd30" --foreground "#594411" "yellow")" "$(gum style --background "#a3be8c" --foreground "#3b4252" "auroragreen")" "$(gum style --background "#d08770" --foreground "#3b4252" "auroraorange")" "$(gum style --background "#ebcb8b" --foreground "#3b4252" "aurorayellow")" "$(gum style --background "#5e81ac" --foreground "#3b4252" "frostblue4")" "$(gum style --background "#88c0d0" --foreground "#3b4252" "frostblue2")" "$(gum style --background "#b48ead" --foreground "#3b4252" "auroramagenta")" "$(gum style --background "#bf616a" --foreground "#3b4252" "aurorared")" "$(gum style --background "#81a1c1" --foreground "#3b4252" "frostblue3")" "$(gum style --background "#8fbcbb" --foreground "#3b4252" "frostblue1")" "$(gum style --background "#434c5e" --foreground "#d8dee9" "polarnight3")" "$(gum style --background "#3b4252" --foreground "#d8dee9" "polarnight2")" "$(gum style --background "#4c566a" --foreground "#d8dee9" "polarnight4")" "$(gum style --background "#2e3440" --foreground "#d8dee9" "polarnight1")" "$(gum style --background "#d8dee9" --foreground "#3b4252" "snowstorm1")" "$(gum style --background "#a3be8c" --foreground "#3b4252" "auroragreenb")" "$(gum style --background "#d08770" --foreground "#3b4252" "auroraorangeb")" "$(gum style --background "#ebcb8b" --foreground "#3b4252" "aurorayellowb")" "$(gum style --background "#b48ead" --foreground "#3b4252" "auroramagentab")" "$(gum style --background "#bf616a" --foreground "#3b4252" "auroraredb")" "$(gum style --background "#d8dee9" --foreground "#3b4252" "snowstorm1b")")
+}
+
+set-color(){
+  
+
+  if [ $color = "adwaita" ]; then
+    papirus-folders -C adwaita --theme Papirus-Dark
+  elif [ $color = "black" ]; then
+    papirus-folders -C black --theme Papirus-Dark
+  elif  [ $color = "blue" ]; then
+    papirus-folders -C blue --theme Papirus-Dark
+  elif  [ $color = "bluegrey" ]; then
+    papirus-folders -C bluegrey --theme Papirus-Dark
+  elif  [ $color = "breeze" ]; then
+    papirus-folders -C breeze --theme Papirus-Dark
+  elif  [ $color = "brown" ]; then
+    papirus-folders -C brown --theme Papirus-Dark
+  elif  [ $color = "carmine" ]; then
+    papirus-folders -C carmine --theme Papirus-Dark  
+  elif  [ $color = "cyan" ]; then
+    papirus-folders -C cyan --theme Papirus-Dark
+  elif  [ $color = "darkcyan" ]; then
+    papirus-folders -C darkcyan --theme Papirus-Dark
+  elif  [ $color = "deeporange" ]; then
+    papirus-folders -C deeporange --theme Papirus-Dark
+  elif  [ $color = "green" ]; then
+    papirus-folders -C green --theme Papirus-Dark
+  elif  [ $color = "grey" ]; then
+    papirus-folders -C grey --theme Papirus-Dark
+  elif  [ $color = "indigo" ]; then
+    papirus-folders -C indigo --theme Papirus-Dark
+  elif  [ $color = "magenta" ]; then
+    papirus-folders -C magenta --theme Papirus-Dark
+  elif  [ $color = "nordic" ]; then
+    papirus-folders -C nordic --theme Papirus-Dark
+  elif  [ $color = "orange" ]; then
+    papirus-folders -C orange --theme Papirus-Dark
+  elif  [ $color = "palebrown" ]; then
+    papirus-folders -C palebrown --theme Papirus-Dark
+  elif  [ $color = "paleorange" ]; then
+    papirus-folders -C paleorange --theme Papirus-Dark
+  elif  [ $color = "pink" ]; then
+    papirus-folders -C pink --theme Papirus-Dark
+  elif  [ $color = "red" ]; then
+    papirus-folders -C red --theme Papirus-Dark
+  elif  [ $color = "teal" ]; then
+    papirus-folders -C teal --theme Papirus-Dark
+  elif  [ $color = "violet" ]; then
+    papirus-folders -C violet --theme Papirus-Dark
+  elif  [ $color = "white" ]; then
+    papirus-folders -C white --theme Papirus-Dark
+  elif  [ $color = "yaru" ]; then
+    papirus-folders -C yaru --theme Papirus-Dark
+  elif  [ $color = "yellow" ]; then
+    papirus-folders -C yellow --theme Papirus-Dark
+  elif  [ $color = "auroragreen" ]; then
+    papirus-folders -C auroragreen --theme Papirus-Dark
+  elif  [ $color = "auroraorange" ]; then
+    papirus-folders -C auroraorange --theme Papirus-Dark
+  elif  [ $color = "aurorayellow" ]; then
+    papirus-folders -C aurorayellow --theme Papirus-Dark
+  elif  [ $color = "frostblue4" ]; then
+    papirus-folders -C frostblue4 --theme Papirus-Dark
+  elif  [ $color = "frostblue2" ]; then
+    papirus-folders -C frostblue2 --theme Papirus-Dark
+  elif  [ $color = "auroramagenta" ]; then
+    papirus-folders -C auroramagenta --theme Papirus-Dark
+  elif  [ $color = "aurorared" ]; then
+    papirus-folders -C aurorared --theme Papirus-Dark
+  elif  [ $color = "frostblue3" ]; then
+    papirus-folders -C frostblue3 --theme Papirus-Dark
+  elif  [ $color = "frostblue1" ]; then
+    papirus-folders -C frostblue1 --theme Papirus-Dark
+  elif  [ $color = "polarnight3" ]; then
+    papirus-folders -C polarnight3 --theme Papirus-Dark
+  elif  [ $color = "polarnight2" ]; then
+    papirus-folders -C polarnight2 --theme Papirus-Dark
+  elif  [ $color = "polarnight4" ]; then
+    papirus-folders -C polarnight4 --theme Papirus-Dark
+  elif  [ $color = "polarnight1" ]; then
+    papirus-folders -C polarnight1 --theme Papirus-Dark
+  elif  [ $color = "snowstorm1" ]; then
+    papirus-folders -C snowstorm1 --theme Papirus-Dark
+  elif  [ $color = "auroragreenb" ]; then
+    papirus-folders -C auroragreenb --theme Papirus-Dark
+  elif  [ $color = "auroraorangeb" ]; then
+    papirus-folders -C auroraorangeb --theme Papirus-Dark
+  elif  [ $color = "aurorayellowb" ]; then
+    papirus-folders -C aurorayellowb --theme Papirus-Dark
+  elif  [ $color = "auroramagentab" ]; then
+    papirus-folders -C auroramagentab --theme Papirus-Dark
+  elif  [ $color = "auroraredb" ]; then
+    papirus-folders -C auroraredb --theme Papirus-Dark
+  elif  [ $color = "snowstorm1b" ]; then
+    papirus-folders -C snowstorm1b --theme Papirus-Dark
+  fi 
+
+}
+
+dx(){
+    
+    nautilus -q > /dev/null 2>&1
+    
+}
+
+color-folders
+set-color
+dx

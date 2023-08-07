@@ -1,0 +1,7 @@
+[Desktop Entry]
+Version=2.2
+Name=Clean
+Exec=gnome-terminal -- /bin/sh -c "clean"
+Icon=/usr/bin/inc-files/clean.png
+Type=Application
+Categories=Utility
