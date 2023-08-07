@@ -2,6 +2,6 @@
 Version=2.2
 Name=Color Folders
 Exec=gnome-terminal -- /bin/sh -c "color-folders; echo Done - Press enter to exit; read _"
-Icon=/usr/bin/inc-files/color-folders.png
+Icon=/usr/share/color-folders/color-folders.png
 Type=Application
 Categories=Utility

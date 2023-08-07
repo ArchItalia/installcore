@@ -106,6 +106,9 @@ full="etcher-bin gnome-font-viewer libreoffice vlc blender inkscape gimp gnome-w
         cp -rp /home/inc-files/color-folders.desktop /home/$user_name/.local/share/applications/
         cp -rp /home/inc-files/papirus-folders /usr/bin/
         cp -rp /home/inc-files/color-folders /usr/bin/
+        mkdir -p /usr/share/{clean,color-folders}
+        cp -rp /home/inc-files/clean.png /usr/share/clean/
+        cp -rp /home/inc-files/color-folders.png /usr/share/color-folders/
         
 
         
