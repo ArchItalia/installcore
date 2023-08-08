@@ -26,11 +26,11 @@ decrypted=$(echo "$user_password" | openssl enc -d -aes256 -base64 -k "$key")
 decrypted2=$(echo "$root_password" | openssl enc -d -aes256 -base64 -k "$key")
 zr=$(echo "$json" | jq -r '.partition.zram')
 zram="${zr}G"
-core="core-base architalia-fonts core-gtk-theme core-gnome-backgrounds papirus-icon-theme papirus-nord gum core-keyring core-extensions-base core-terminal-nord-theme clean"
+core="python-pillow tk core-base architalia-fonts core-gtk-theme core-gnome-backgrounds papirus-icon-theme papirus-nord gum core-keyring core-extensions-base core-terminal-nord-theme clean"
 de="xorg gnome-shell gnome-control-center gnome-keyring gnome-terminal gnome-text-editor gnome-shell-extensions xdg-user-dirs-gtk xdg-user-dirs gvfs gdm nautilus"
-base="networkmanager wpa_supplicant wireless_tools netctl net-tools iw cups alsa-utils pipewire-pulse mtools dosfstools exfatprogs fuse  acpi cronie git wget reflector bluez bluez-utils"
+base="python-gobject gtk3 gdk-pixbuf2 pango cairo networkmanager wpa_supplicant wireless_tools netctl net-tools iw cups alsa-utils pipewire-pulse mtools dosfstools exfatprogs fuse  acpi cronie git wget reflector bluez bluez-utils"
 generic="$aurhelper gnome-shell-extension-desktop-icons-ng firefox downgrade timeshift extension-manager evince eog gparted gsmartcontrol mpv gnome-calculator gnome-clocks gnome-calendar htop gnome-system-monitor vim nano neofetch"
-services="gdm NetworkManager  bluetooth cronie reflector cups"
+services="gdm NetworkManager bluetooth cronie reflector cups"
 full="etcher-bin gnome-font-viewer libreoffice vlc blender inkscape gimp gnome-weather gnome-clocks gnome-calculator gnome-calendar gnome-maps gnome-contacts gnome-disk-utility thunderbird transmission-gtk remmina cheese rhythmbox simple-scan telegram-desktop obs-studio discord lutris code  gnome-boxes foliate darktable"
 
 
@@ -86,11 +86,9 @@ full="etcher-bin gnome-font-viewer libreoffice vlc blender inkscape gimp gnome-w
         elif [ $firewall = "firewalld" ]; then
               pacman -Sy firewalld --noconfirm
               systemctl enable firewalld
-
-        elif [ $firewall = "No firewall" ]; then
-              echo "no firewall select"      
+    
         else
-              pacman -Sy $firewall --noconfirm
+              echo "nothing iptables already installed."
         fi
 
 
@@ -109,7 +107,13 @@ full="etcher-bin gnome-font-viewer libreoffice vlc blender inkscape gimp gnome-w
         mkdir -p /usr/share/{clean,color-folders}
         cp -rp /home/inc-files/clean.png /usr/share/clean/
         cp -rp /home/inc-files/color-folders.png /usr/share/color-folders/
-        
+        cp -rp /home/inc-files/welcome /usr/share/
+        cp -rp /home/inc-files/welcome.desktop /home/$user_name/.local/share/applications/
+        cp -rp /home/inc-files/welcome.desktop /home/$user_name/.config/autostart/
+        cp -rp /home/inc-files/welcome.py /usr/bin/
+        mkdir -p /home/$user_name/.local/share/gnome-shell/extensions/
+        cp -rp /usr/share/gnome-shell/extensions/dash-to-dock@micxgx.gmail.com /home/$user_name/.local/share/gnome-shell/extensions/
+
 
 
     }

@@ -234,7 +234,7 @@ Firewall() {
     Tfw2=$(cat $ilocale/Tfw2)
     clear
     gum style --border normal --margin "1" --padding "1 2" "$Tfw1" "$(gum style --foreground "#ebcb8b" "$Tfw2")"
-    fwll=$(gum choose --limit 1 "No firewall" firewalld ufw iptables )
+    fwll=$(gum choose --limit 1 firewalld ufw iptables )
 
   
 }
