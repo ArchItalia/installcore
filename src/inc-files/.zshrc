@@ -11,6 +11,8 @@ if [ -r ~/.zshrc -a -r ~/.zshrc.global -a ! -r ~/.zshrc.local ] ; then
     printf '-!-\n'
 fi
 
+alias neofetch='neofetch --source /usr/share/info/ascii-core.txt
+neofetch
 
 
 

@@ -60,7 +60,7 @@ full="etcher-bin gnome-font-viewer libreoffice vlc blender inkscape gimp gnome-w
            cp -rp /home/inc-files/.zshrc /home/$user_name/
            cp -rp /home/inc-files/zsh /etc/
         else
-           echo ""
+           cp -rp /home/inc-files/.bashrc /home/$user_name/
         fi
         rm -rf /etc/os-release
 
@@ -97,7 +97,8 @@ full="etcher-bin gnome-font-viewer libreoffice vlc blender inkscape gimp gnome-w
         cp -rp /home/inc-files/startx.desktop /home/$user_name/.config/autostart/
         cp -rp /home/inc-files/Templates /home/$user_name/
         cp -rp /home/inc-files/os-release /etc/
-        cp -rp /home/inc-files/os-release.d /etc/
+        cp -rp /home/inc-files/os-release /lib/
+        cp -rp /home/inc-files/lsb-release /etc/
         cp -rp /home/inc-files/info /usr/share/
         mkdir -p /home/$user_name/.local/share/applications/
         cp -rp /home/inc-files/clean.desktop /home/$user_name/.local/share/applications/
@@ -113,7 +114,7 @@ full="etcher-bin gnome-font-viewer libreoffice vlc blender inkscape gimp gnome-w
         cp -rp /home/inc-files/welcome.py /usr/bin/
         mkdir -p /home/$user_name/.local/share/gnome-shell/extensions/
         cp -rp /usr/share/gnome-shell/extensions/dash-to-dock@micxgx.gmail.com /home/$user_name/.local/share/gnome-shell/extensions/
-
+       # echo "alias neofetch='neofetch --source /usr/share/info/ascii-core.txt" >> /home/$user_name/.bashrc
 
 
     }
