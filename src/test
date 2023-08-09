@@ -1,6 +1,0 @@
-#!/bin/bash
-
-
-lspci -vnn | grep VGA -A 12
-
-sleep 60
