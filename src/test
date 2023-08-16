@@ -1,0 +1,40 @@
+        # Pagina 2 timeshift
+        page8_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+        page8_box.set_margin_top(40)
+        
+        image = Gtk.Image.new_from_file('/usr/share/welcome/icn/timeshift.png')
+        page8_box.pack_start(image, False, False, 0)
+
+        
+        label8_1 = Gtk.Label()
+        label8_1.set_markup("<span font_desc='Architalia Bold 25' foreground='#d8dee9' font_family='Architalia'>Timeshift</span>")
+        label8_2 = Gtk.Label()
+        label8_2.set_markup("<span font_desc='Architalia Bold 14' foreground='#d8dee9' font_family='Architalia'>System restore tool for Linux</span>")
+        label8_0 = Gtk.Label()
+        label8_0.set_markup("<span font_desc='Helvetica Bold 25' foreground='#000000' font_family='Helvetica'> </span>")
+        label8_3 = Gtk.Label()
+        label8_3.set_markup("<span font_desc='Architalia 14' foreground='#d8dee9' font_family='Architalia'>Creates filesystem snapshots using rsync+hardlinks, or BTRFS snapshots.</span>")
+        label8_4 =Gtk.Label()
+        label8_4.set_markup("<span font_desc='Architalia 14' foreground='#81a1c1' font_family='Architalia'>A minimum of two daily and two boot snapshots are racommended.</span>")
+        label8_5 =Gtk.Label()
+        label8_5.set_markup("<span font_desc='Architalia 14' foreground='#ebcb8b' font_family='Architalia'>If anything breaks, you can then restore your computer to its previous working state.</span>")
+        label8_00 = Gtk.Label()
+        label8_00.set_markup("<span font_desc='Helvetica Bold 40' foreground='#000000' font_family='Helvetica'> </span>")
+        
+        button = Gtk.Button.new_with_label('Timeshift Launch')
+        button.connect('clicked', lambda _: subprocess.check_call('timeshift-launcher', shell=True))
+        button.set_size_request(200, 50) 
+        
+        page8_box.pack_start(label8_1, False, False, 0)
+        page8_box.pack_start(label8_2, False, False, 0)
+        page8_box.pack_start(label8_0, False, False, 0)
+        page8_box.pack_start(label8_3, False, False, 0)
+        page8_box.pack_start(label8_4, False, False, 0)
+        page8_box.pack_start(label8_5, False, False, 0)
+        page8_box.pack_start(label8_00, False, False, 0)
+        page8_box.pack_start(button, False, False, 10)
+
+
+
+        self.pages.append(page8_box)
+        content_box.pack_start(page8_box, True, True, 0)

@@ -2,7 +2,7 @@
 # installcore
 # author Jonathan Sanfilippo 
 
-version="2.0"
+version="2.1"
 url="/usr/bin/inc-files"
 # test url
 #url="/home/jonathan/Development/ai-repo/repository/installcore/src/inc-files"
@@ -111,6 +111,19 @@ Menu(){
 }
 
 
+Keymap() {
+    Tkeymap=$(cat $ilocale/Tkeymap)
+    keymap1=$(localectl list-keymaps | gum filter --placeholder "$Tkeymap")
+
+    if [ $keymap1 = "uk" ]; then
+        keymap="gb"
+    else
+        keymap=$keymap1    
+    fi
+
+    set=$(gsettings set org.gnome.desktop.input-sources sources "[('xkb', '$keymap')]")
+    $set
+}
 
 Timezone() {
     TTimezone=$(cat $ilocale/TTimezone)
@@ -118,14 +131,11 @@ Timezone() {
     
 }
 
-Keymap() {
-    Tkeymap=$(cat $ilocale/Tkeymap)
-    keymap=$(localectl list-keymaps | gum filter --placeholder "$Tkeymap")
-}
 
 Locale() {
     Tlocale=$(cat $ilocale/Tlocale)
     locale=$(cat $url/locales | gum filter --placeholder "$Tlocale")
+    
 }
 
 Username() {
@@ -134,10 +144,13 @@ Username() {
     Tusername2=$(cat $ilocale/Tusername2)
     Tusername3=$(cat $ilocale/Tusername3)
     Tusername4=$(cat $ilocale/Tusername4)
+    Tusername5=$(cat $ilocale/Tusername5)
     gum style --border normal --margin "1" --padding "1 2" "$Tusername1" "$Tusername2" "$(gum style --foreground "#ebcb8b" "$Tusername3")"
     name=$(gum input --placeholder "$Tusername4")
-    username=$(echo "$name" | cut -d' ' -f1 | tr '[:upper:]' '[:lower:]')
+    inputName=$(echo "$name" | cut -d' ' -f1 | tr '[:upper:]' '[:lower:]')
     realname="$name"
+    read -p " $(gum style  --background "transparent" --foreground "#d8dee9" "Username: ")$(gum style  --background "transparent" --foreground "#81a1c1" "$inputName") $(gum style  --background "transparent" --foreground "#d8dee9" "$Tusername5: ")" username
+    username=${username:-$inputName}
 }
 
 # Password Function
@@ -287,6 +300,7 @@ Disk() {
     default_root=$(lsblk -b -n -o SIZE /dev/$disk | awk 'NR==1{size=int($1/1048576); printf "%d", size}')
     read -p "$(gum style --foreground "#81a1c1" " $disk size: $default_root MB.") $Tdisk4 [MB]: " root
     root=${root:-}
+
     home=$(expr $default_root - $root)
     root1=$(echo "scale=2; $root/1024" | bc)
     home1=$(echo "scale=2; $home/1024" | bc)
@@ -411,8 +425,8 @@ Install() {
 Language
 Welcome
 Menu
-Timezone
 Keymap
+Timezone
 Locale
 Username
 Password

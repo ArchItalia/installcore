@@ -6,10 +6,12 @@
 # gtk3 glib2 pango gobject-introspection
 
 import gi
+import os
+import shutil
 import subprocess
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, GdkPixbuf, Pango
-#import cairo
+
 
 class ContentStyle:
     def __init__(self):
@@ -104,7 +106,11 @@ class MyWindow(Gtk.Window):
             {"icon_path": "/usr/share/welcome/icn/welcome.png", "title": "Welcome", "description": "About Core Linux"},
             {"icon_path": "/usr/share/welcome/icn/timeshift.png", "title": "Timeshift", "description": "First step"},
             {"icon_path": "/usr/share/welcome/icn/color-folders.png", "title": "Color Folders", "description": "Papirus folders"},
-            {"icon_path": "/usr/share/welcome/icn/clean.png", "title": "Clean", "description": "System cleaner"}
+            {"icon_path": "/usr/share/welcome/icn/clean.png", "title": "Clean", "description": "System cleaner"},
+            {"icon_path": "/usr/share/welcome/icn/downgrade.png", "title": "Downgrade", "description": "Roll back"},
+            {"icon_path": "/usr/share/welcome/icn/reflector.png", "title": "Reflector", "description": "update mirrorlist"},
+            {"icon_path": "/usr/share/welcome/icn/packages.png", "title": "Packages", "description": "Search and install"},
+            {"icon_path": "/usr/share/welcome/icn/firewall.png", "title": "Security", "description": "Configure Firewall"}
         ]
         for item in sidebar_items:
             listbox_row = SidebarItem(item["icon_path"], item["title"], item["description"])
@@ -153,7 +159,7 @@ class MyWindow(Gtk.Window):
         label1_5 = Gtk.Label()
         label1_5.set_markup("<span font_desc='Architalia 14' foreground='#d8dee9' font_family='Architalia'>Core Linux 2023.08 Beta</span>")
         label1_6 = Gtk.Label()
-        label1_6.set_markup("<span font_desc='Architalia 14' foreground='#81a1c1' font_family='Architalia'>Developed by Jonathan Sanfilippo, Klod cripta.</span>")
+        label1_6.set_markup("<span font_desc='Architalia 14' foreground='#81a1c1' font_family='Architalia'>Developed by Jonathan Sanfilippo, Klod Cripta.</span>")
         page1_box.pack_start(label1_0, False, False, 0)
         page1_box.pack_start(label1_1, False, False, 0)
         page1_box.pack_start(label1_2, False, False, 0)
@@ -266,7 +272,7 @@ class MyWindow(Gtk.Window):
         self.pages.append(page3_box)
         content_box.pack_start(page3_box, True, True, 0)
         
-                # Pagina 4 clean
+        # Pagina 4 clean
         page4_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
         page4_box.set_margin_top(40)
         
@@ -313,6 +319,211 @@ class MyWindow(Gtk.Window):
         content_box.pack_start(page4_box, True, True, 0)
         
 
+
+        # Pagina 5
+        page5_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+        page5_box.set_margin_top(40)
+
+        image = Gtk.Image.new_from_file('/usr/share/welcome/icn/downgrade.png')
+        label5_1 = Gtk.Label()
+        label5_1.set_markup("<span font_desc='Architalia Bold 25' foreground='#d8dee9' font_family='Architalia'>Downgrade Packages</span>")
+        label5_2 = Gtk.Label()
+        label5_2.set_markup("<span font_desc='Architalia Bold 14' foreground='#d8dee9' font_family='Architalia'>Roll back to a previous package version</span>")
+        label5_0 = Gtk.Label()
+        label5_0.set_markup("<span font_desc='Helvetica Bold 25' foreground='#000000' font_family='Helvetica'> </span>")
+        label5_3 = Gtk.Label()
+        label5_3.set_markup("<span font_desc='Architalia 14' foreground='#d8dee9' font_family='Architalia'>Downgrade is a useful tool for rolling back to a previous package version.</span>")
+        label5_4 = Gtk.Label()
+        label5_4.set_markup("<span font_desc='Architalia 14' foreground='#81a1c1' font_family='Architalia'>Write the name of the package you want to downgrade and press the button.</span>")
+        name_label = Gtk.Label()
+        name_label.set_markup("<span font_desc='Architalia 14' foreground='#ebcb8b' font_family='Architalia'>Enter package name:</span>")
+        
+        def on_entry_changed(entry):
+            pkg = entry.get_text()
+
+        self.name_entry = Gtk.Entry()
+        self.name_entry.set_placeholder_text("Enter package name")
+        self.name_entry.set_size_request(200, 30)
+        self.name_entry.connect('changed', self.on_entry_changed)
+
+        button = Gtk.Button.new_with_label('Downgrade Launch')
+        button.set_size_request(200, 50)
+        button.connect('clicked', self.on_button_clicked)
+        
+        
+        terminal="gnome-terminal" 
+    
+
+       
+    
+        page5_box.pack_start(image, False, False, 0)
+        page5_box.pack_start(label5_1, False, False, 0)
+        page5_box.pack_start(label5_2, False, False, 0)
+        page5_box.pack_start(label5_0, False, False, 0)
+        page5_box.pack_start(label5_3, False, False, 0)
+        page5_box.pack_start(label5_4, False, False, 0)
+        page5_box.pack_start(name_label, False, False, 10)
+        page5_box.pack_start(self.name_entry, False, False, 0)
+        page5_box.pack_start(button, False, False, 10)
+
+        
+        self.pages.append(page5_box)
+        content_box.pack_start(page5_box, True, True, 0)
+
+
+        # Pagina 6
+        page6_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+        page6_box.set_margin_top(40)
+        
+        image = Gtk.Image.new_from_file('/usr/share/welcome/icn/reflector.png')
+        label6_1 = Gtk.Label()
+        label6_1.set_markup("<span font_desc='Architalia Bold 25' foreground='#d8dee9' font_family='Architalia'>Reflector Pacman Mirrorlist</span>")
+        label6_2 = Gtk.Label()
+        label6_2.set_markup("<span font_desc='Architalia Bold 14' foreground='#d8dee9' font_family='Architalia'>Automatic mirrorlist generator</span>")
+        label6_0 = Gtk.Label()
+        label6_0.set_markup("<span font_desc='Helvetica Bold 25' foreground='#000000' font_family='Helvetica'> </span>")
+        label6_3 = Gtk.Label()
+        label6_3.set_markup("<span font_desc='Architalia 14' foreground='#d8dee9' font_family='Architalia'>Reflector is an automatic Pacman mirrorlist generator, optimized for faster downloads.</span>")
+        label6_4 = Gtk.Label()
+        label6_4.set_markup("<span font_desc='Architalia 14' foreground='#81a1c1' font_family='Architalia'>Enter the country and press the button to generate the mirrorlist.</span>")
+        
+        name_label = Gtk.Label()
+        name_label.set_markup("<span font_desc='Architalia 14' foreground='#ebcb8b' font_family='Architalia'>Enter the country e.g. GB, NL</span>")
+        self.name_entry = Gtk.Entry()
+        self.name_entry.set_size_request(200, 30)
+        
+        buttonx = Gtk.Button.new_with_label('Reflector Launch')
+        buttonx.set_size_request(200, 50)
+        
+        command = "reflector --verbose -c $country --latest 10 --age 12 --fastest 10 --protocol https --sort rate --save /etc/pacman.d/mirrorlist"
+        buttonx.connect("clicked", lambda x: subprocess.check_call(["gnome-terminal", "--", "sh", "-c", command.replace("$country", self.name_entry.get_text())], shell=False))
+        
+        page6_box.pack_start(image, False, False, 0)
+        page6_box.pack_start(label6_1, False, False, 0)
+        page6_box.pack_start(label6_2, False, False, 0)
+        page6_box.pack_start(label6_0, False, False, 0)
+        page6_box.pack_start(label6_3, False, False, 0)
+        page6_box.pack_start(label6_4, False, False, 0)
+        page6_box.pack_start(name_label, False, False, 10)
+        page6_box.pack_start(self.name_entry, False, False, 0)
+        page6_box.pack_start(buttonx, False, False, 10)
+        
+        self.pages.append(page6_box)
+        content_box.pack_start(page6_box, True, True, 0)
+
+
+        # Pagina 7
+        page7_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+        page7_box.set_margin_top(40)
+        
+        image = Gtk.Image.new_from_file('/usr/share/welcome/icn/packages.png')
+        label7_000 = Gtk.Label()
+        label7_000.set_markup("<span font_desc='Helvetica Bold 10' foreground='#000000' font_family='Helvetica'> </span>")
+        label7_1 = Gtk.Label()
+        label7_1.set_markup("<span font_desc='Architalia Bold 25' foreground='#d8dee9' font_family='Architalia'>Package Search</span>")
+        label7_2 = Gtk.Label()
+        label7_2.set_markup("<span font_desc='Architalia Bold 14' foreground='#d8dee9' font_family='Architalia'>General Package Search Tool</span>")
+        label7_0 = Gtk.Label()
+        label7_0.set_markup("<span font_desc='Helvetica Bold 25' foreground='#000000' font_family='Helvetica'> </span>")
+        label7_3 = Gtk.Label()
+        label7_3.set_markup("<span font_desc='Architalia 14' foreground='#d8dee9' font_family='Architalia'>You can use one of the following commands to install packages:</span>")
+        label7_4 = Gtk.Label()
+        label7_4.set_markup("<span font_desc='Architalia 14' foreground='#81a1c1' font_family='Architalia'>Enter the package name you want to search for and press the button.</span>")
+        
+        name_label = Gtk.Label()
+        name_label.set_markup("<span font_desc='Architalia 14' foreground='#ebcb8b' font_family='Architalia'>Enter the package name:</span>")
+        
+        def on_entry_changed(entry):
+            pkgx = entry.get_text()
+
+        self.name_entry2 = Gtk.Entry()
+        self.name_entry2.set_placeholder_text("Enter package name")
+        self.name_entry2.set_size_request(200, 30)
+        self.name_entry2.connect('changed', self.on_entry_changed2) 
+
+
+        button = Gtk.Button.new_with_label('Search')
+        button.set_size_request(200, 50)
+        button.connect('clicked', self.on_button_clicked2)
+        
+        button2 = Gtk.Button.new_with_label('Uninstall')
+        button2.set_size_request(200, 50)
+        button2.connect('clicked', self.on_button_clicked3)
+        
+ 
+        
+        page7_box.pack_start(image, False, False, 0)
+        page7_box.pack_start(label7_000, False, False, 0)
+        page7_box.pack_start(label7_1, False, False, 0)
+        page7_box.pack_start(label7_2, False, False, 0)
+        page7_box.pack_start(label7_0, False, False, 0)
+        page7_box.pack_start(label7_3, False, False, 0)
+        page7_box.pack_start(label7_4, False, False, 0)
+        page7_box.pack_start(name_label, False, False, 10)
+        page7_box.pack_start(self.name_entry2, False, False, 0)
+        page7_box.pack_start(button, False, False, 5)
+        page7_box.pack_start(button2, False, False, 5)
+
+        self.pages.append(page7_box)
+        content_box.pack_start(page7_box, True, True, 0)
+
+        # Pagina 8
+        page8_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+        page8_box.set_margin_top(40)
+        
+        image = Gtk.Image.new_from_file('/usr/share/welcome/icn/firewall.png')
+        page8_box.pack_start(image, False, False, 0)
+
+        
+        label8_1 = Gtk.Label()
+        label8_1.set_markup("<span font_desc='Architalia Bold 25' foreground='#d8dee9' font_family='Architalia'>Firewall</span>")
+        label8_2 = Gtk.Label()
+        label8_2.set_markup("<span font_desc='Architalia Bold 14' foreground='#d8dee9' font_family='Architalia'>Configuration tool for network security</span>")
+        label8_0 = Gtk.Label()
+        label8_0.set_markup("<span font_desc='Helvetica Bold 25' foreground='#000000' font_family='Helvetica'> </span>")
+        label8_3 = Gtk.Label()
+        label8_3.set_markup("<span font_desc='Architalia 14' foreground='#d8dee9' font_family='Architalia'>Monitors incoming and outgoing network traffic and blocks unauthorized access.</span>")
+        label8_4 =Gtk.Label()
+        label8_4.set_markup("<span font_desc='Architalia 14' foreground='#81a1c1' font_family='Architalia'>It is recommended to create rules based on your network's security requirements.</span>")
+        label8_5 =Gtk.Label()
+        label8_5.set_markup("<span font_desc='Architalia 14' foreground='#ebcb8b' font_family='Architalia'>In case of an attack or security breach, the firewall can prevent further damage to your system.</span>")
+        label8_00 = Gtk.Label()
+        label8_00.set_markup("<span font_desc='Helvetica Bold 40' foreground='#000000' font_family='Helvetica'> </span>")
+        
+        firewall_command = None
+        if subprocess.call(['which', 'gufw'], stdout=subprocess.PIPE, stderr=subprocess.PIPE) == 0:
+            # Gufw is installed, set the button label and command
+            firewall_button_label = 'Gufw Launch'
+            firewall_command = 'gufw'
+        elif subprocess.call(['which', 'firewall-config'], stdout=subprocess.PIPE, stderr=subprocess.PIPE) == 0:
+            # Firewall-config is installed, set the button label and command
+            firewall_button_label = 'Firewall Config Launch'
+            firewall_command = 'firewall-config'
+        else:
+            # No firewall tools are installed, disable the button
+            firewall_button_label = 'No Firewall installed'
+            firewall_button_enabled = False
+        
+        
+        button = Gtk.Button.new_with_label(firewall_button_label)
+        if firewall_command:
+            button.connect('clicked', lambda _: subprocess.check_call(firewall_command, shell=True))
+        button.set_size_request(200, 50)
+        
+        page8_box.pack_start(label8_1, False, False, 0)
+        page8_box.pack_start(label8_2, False, False, 0)
+        page8_box.pack_start(label8_0, False, False, 0)
+        page8_box.pack_start(label8_3, False, False, 0)
+        page8_box.pack_start(label8_4, False, False, 0)
+        page8_box.pack_start(label8_5, False, False, 0)
+        page8_box.pack_start(label8_00, False, False, 0)
+        page8_box.pack_start(button, False, False, 10)
+
+
+
+        self.pages.append(page8_box)
+        content_box.pack_start(page8_box, True, True, 0)
+
         # Applicazione dello stile ai widget nella barra laterale.
         my_sidebar_style = SidebarStyle()
         my_sidebar_style.set_font('Architalia')
@@ -323,6 +534,8 @@ class MyWindow(Gtk.Window):
         # Mostra la prima pagina di contenuto all'avvio
         self.pages[0].show()
 
+        
+
     def on_sidebar_item_selected(self, listbox, listbox_row):
         # Nasconde tutte le pagine e mostra solo quella selezionata dalla sidebar
         for page in self.pages:
@@ -330,8 +543,60 @@ class MyWindow(Gtk.Window):
 
         selected_page_index = listbox_row.get_index()
         self.pages[selected_page_index].show()
+
+    def on_entry_changed(self, entry):
+        self.pkgx = entry.get_text()
+
+    def on_button_clicked(self, widget):
+        pkg = self.pkg
+        print(f"il pacchetto: {pkg}")
+        terminal="gnome-terminal"
+        os.system(f"{terminal} -- /bin/bash -c 'sudo downgrade {pkg}'")    
+
+    def on_entry_changed2(self, entry):
+        self.pkg = entry.get_text()
+
+    def on_button_clicked2(self, widget):
+        if shutil.which('aura') is not None:
+            aur_helper = 'sudo aura -Ss'
+            stop = "; echo Done - Press enter to exit; read _"
+        elif shutil.which('paru') is not None:
+            aur_helper = 'paru'
+            stop = "; echo Done - Press enter to exit; read _"
+        elif shutil.which('yay') is not None:
+            aur_helper = 'yay'
+            stop = "; echo Done - Press enter to exit; read _"
+        elif shutil.which('pikaur') is not None:
+            aur_helper = 'pikaur'
+            stop = "; echo Done - Press enter to exit; read _"
+        else:
+            raise Exception('Nessun helper AUR trovato')
+        pkg = self.pkg
+        print(f"il pacchetto: {pkg}")
+        terminal="gnome-terminal"
+        os.system(f"{terminal} -- /bin/bash -c '{aur_helper} {pkg} {stop}'")     
         
-       
+
+
+    def on_button_clicked3(self, widget):
+        if shutil.which('aura') is not None:
+            aur_helper = 'sudo aura -Rns'
+            stop = "; echo Done - Press enter to exit; read _"
+        elif shutil.which('paru') is not None:
+            aur_helper = 'paru -Rns'
+            stop = "; echo Done - Press enter to exit; read _"
+        elif shutil.which('yay') is not None:
+            aur_helper = 'yay -Rns'
+            stop = "; echo Done - Press enter to exit; read _"
+        elif shutil.which('pikaur') is not None:
+            aur_helper = 'pikaur -Rns'
+            stop = "; echo Done - Press enter to exit; read _"
+        else:
+            raise Exception('Nessun helper AUR trovato')
+        pkg = self.pkg
+        print(f"il pacchetto: {pkg}")
+        terminal="gnome-terminal"
+        os.system(f"{terminal} -- /bin/bash -c '{aur_helper} {pkg} {stop}'")      
         
 
 win = MyWindow()

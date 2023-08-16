@@ -1,5 +1,7 @@
 #!/usr/bin/bash
 
+
+
 # Leggi il file JSON in una variabile
 json=$(cat "/tmp/config.json")
 
@@ -10,7 +12,6 @@ root=$(echo "$json" | jq -r '.partition.root')
 country=$(echo "$json" | jq -r '.locale.reflector')
 kernel=$(echo "$json" | jq -r '.users[0].kernel')
 pacstrap="base base-devel $kernel linux-firmware intel-ucode btrfs-progs jq"
-
 
 
 check_internet() {
@@ -175,7 +176,7 @@ legacy(){
 
 base(){
 
-        reflector --verbose -c $country -a 6 --sort rate --save /etc/pacman.d/mirrorlist
+        reflector --verbose -c $country --latest 5 --age 12 --fastest 5 --protocol https --sort rate --save /etc/pacman.d/mirrorlist
         pacstrap -K /mnt $pacstrap
         genfstab -U /mnt > /mnt/etc/fstab
         

@@ -1,0 +1,7 @@
+[Desktop Entry]
+Version=2.2
+Name=Clean
+Exec=clean
+Icon=/usr/bin/icn-files/clean.png
+Type=Application
+Categories=Utility

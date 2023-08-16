@@ -26,9 +26,9 @@ decrypted=$(echo "$user_password" | openssl enc -d -aes256 -base64 -k "$key")
 decrypted2=$(echo "$root_password" | openssl enc -d -aes256 -base64 -k "$key")
 zr=$(echo "$json" | jq -r '.partition.zram')
 zram="${zr}G"
-core="python-pillow tk core-base architalia-fonts core-gtk-theme core-gnome-backgrounds papirus-icon-theme papirus-nord gum core-keyring core-extensions-base core-terminal-nord-theme clean"
+core="core-nautilus-extensions python-pillow tk core-base architalia-fonts core-gtk-theme core-gnome-backgrounds papirus-icon-theme papirus-nord gum core-keyring core-extensions-base core-terminal-nord-theme clean"
 de="xorg gnome-shell gnome-control-center gnome-keyring gnome-terminal gnome-text-editor gnome-shell-extensions xdg-user-dirs-gtk xdg-user-dirs gvfs gdm nautilus"
-base="python-gobject gtk3 gdk-pixbuf2 pango cairo networkmanager wpa_supplicant wireless_tools netctl net-tools iw cups alsa-utils pipewire-pulse mtools dosfstools exfatprogs fuse  acpi cronie git wget reflector bluez bluez-utils"
+base="liferea nautilus-image-converter python-nautilus python-gobject gtk3 gdk-pixbuf2 pango cairo networkmanager wpa_supplicant wireless_tools netctl net-tools iw cups alsa-utils pipewire-pulse mtools dosfstools exfatprogs fuse  acpi cronie git wget reflector bluez bluez-utils"
 generic="$aurhelper gnome-shell-extension-desktop-icons-ng firefox downgrade timeshift extension-manager evince eog gparted gsmartcontrol mpv gnome-calculator gnome-clocks gnome-calendar htop gnome-system-monitor vim nano neofetch"
 services="gdm NetworkManager bluetooth cronie reflector cups"
 full="etcher-bin gnome-font-viewer libreoffice vlc blender inkscape gimp gnome-weather gnome-clocks gnome-calculator gnome-calendar gnome-maps gnome-contacts gnome-disk-utility thunderbird transmission-gtk remmina cheese rhythmbox simple-scan telegram-desktop obs-studio discord lutris code  gnome-boxes foliate darktable"
@@ -114,7 +114,11 @@ full="etcher-bin gnome-font-viewer libreoffice vlc blender inkscape gimp gnome-w
         cp -rp /home/inc-files/welcome.py /usr/bin/
         mkdir -p /home/$user_name/.local/share/gnome-shell/extensions/
         cp -rp /usr/share/gnome-shell/extensions/dash-to-dock@micxgx.gmail.com /home/$user_name/.local/share/gnome-shell/extensions/
-       # echo "alias neofetch='neofetch --source /usr/share/info/ascii-core.txt" >> /home/$user_name/.bashrc
+        cp -rp /usr/share/gnome-shell/extensions/RecentItems@bananenfisch.net /home/$user_name/.local/share/gnome-shell/extensions/
+        cp -rp /usr/share/gnome-shell/extensions/username_in_shell_panel@raviprak /home/$user_name/.local/share/gnome-shell/extensions/
+        cp -rp /usr/share/gnome-shell/extensions/notifications-alert-on-user-menu@hackedbellini.gmail.com /home/$user_name/.local/share/gnome-shell/extensions/
+        cp -rp /usr/share/gnome-shell/extensions/mediacontrols@cliffniff.github.com /home/$user_name/.local/share/gnome-shell/extensions/
+        #cp -rp /usr/share/gnome-shell/extensions/openweather-extension@jenslody.de  /home/$user_name/.local/share/gnome-shell/extensions/
 
 
     }
@@ -157,7 +161,6 @@ full="etcher-bin gnome-font-viewer libreoffice vlc blender inkscape gimp gnome-w
 
 
 base2 
-
 if [ "$partition_efi" = "true" ]; then  
   systemd-boot
 else
@@ -170,3 +173,8 @@ rm -rf /home/inc-files
 cp -rp /etc/gtk-4.0 /home/$user_name/.config/
 chown -R $user_name:$user_name /home/$user_name
 chmod -R 755 /home/$user_name
+
+echo ""
+echo -e "\e[32mThe installation process is complete.\e[0m"
+echo -e "\e[33mPlease verify that there are no errors before exiting.\e[0m"
+echo ""
